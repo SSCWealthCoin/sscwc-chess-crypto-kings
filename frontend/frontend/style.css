@@ -1,0 +1,3 @@
+body { font-family: sans-serif; text-align: center; background: #111; color: #fff; }
+button { padding: 10px 20px; background: gold; border: none; border-radius: 6px; cursor: pointer; }
+canvas { margin-top: 20px; background: #fff; }
