@@ -1,0 +1,124 @@
+sscwc-chess-crypto-kings/
+├─ backend/
+│  ├─ server.js
+│  └─ package.json
+├─ frontend/
+│  ├─ index.html
+│  ├─ app.js
+│  ├─ style.css
+│  └─ README.md
+└─ README.md
+const express = require('express');
+const cors = require('cors');
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+app.post('/startMatch', async (req, res) => {
+    const { player, stake } = req.body;
+    console.log(`Player ${player} staking ${stake} SSCWC tokens`);
+    res.json({ success: true });
+});
+
+app.listen(process.env.PORT || 3000, () => console.log("Backend running"));
+{
+  "name": "sscwc-chess-backend",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "dependencies": { "cors": "^2.8.5", "express": "^4.18.2" }
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SSCWC Chess Crypto Kings</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<h1>SSCWC Chess Crypto Kings</h1>
+<div id="board"></div>
+<div id="status"></div>
+<button id="connectWallet">Connect Wallet</button>
+<button id="startMatch">Start Match ($SSCWC)</button>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/1.0.0/chess.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
+let board = null;
+let game = new Chess();
+let userAddress = null;
+
+async function connectWallet() {
+    if (window.ethereum) {
+        const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+        userAddress = accounts[0];
+        alert("Wallet connected: " + userAddress);
+    } else alert("Install MetaMask!");
+
+}
+
+function onDragStart(source, piece) {
+    if (game.game_over()) return false;
+    if ((game.turn() === 'w' && piece.search(/^b/) !== -1) ||
+        (game.turn() === 'b' && piece.search(/^w/) !== -1)) return false;
+}
+
+function onDrop(source, target) {
+    let move = game.move({ from: source, to: target, promotion: 'q' });
+    if (move === null) return 'snapback';
+    updateStatus();
+}
+
+function updateStatus() {
+    let status = '';
+    if (game.in_checkmate()) status = 'Checkmate! Game over.';
+    else if (game.in_draw()) status = 'Draw!';
+    else status = (game.turn() === 'w' ? 'White' : 'Black') + ' to move';
+    document.getElementById('status').innerHTML = status;
+}
+
+async function startMatch() {
+    if (!userAddress) { alert("Connect wallet first!"); return; }
+
+    const response = await fetch('https://sscwc-chess-backend.onrender.com/startMatch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ player: userAddress, stake: "1000000000000000000" })
+    });
+
+    const result = await response.json();
+    if (result.success) alert("Match started! Deposit confirmed.");
+    else alert("Error: " + result.error);
+}
+
+document.getElementById('connectWallet').addEventListener('click', connectWallet);
+document.getElementById('startMatch').addEventListener('click', startMatch);
+
+board = Chessboard('board', {
+    draggable: true,
+    position: 'start',
+    onDragStart: onDragStart,
+    onDrop: onDrop,
+});
+updateStatus();
+body { font-family: Arial; text-align: center; margin: 20px; }
+#board { width: 400px; margin: auto; }
+button { margin: 10px; padding: 10px 20px; }
+# SSCWC Chess Crypto Kings Frontend
+Open index.html in a browser. Connect wallet and start match.
+# SSCWC Chess Crypto Kings
+
+© 2025 SSC Wealth Coin (SSCWC). All rights reserved.
+
+Browser-based chess game integrated with SSCWC token staking.
+
+## Backend
+
+## Frontend
+Open frontend/index.html in browser.  
+
+Future: Integrate with SSCWCChessEscrow.sol on BSC Testnet.
