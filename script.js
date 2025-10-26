@@ -1,3 +1,37 @@
+// === LOGIN & AGE VERIFICATION ===
+window.addEventListener("DOMContentLoaded", () => {
+  const modal = document.getElementById("loginModal");
+  const form = document.getElementById("loginForm");
+  const storedUser = localStorage.getItem("sscwc_user");
+
+  if (!storedUser) {
+    modal.style.display = "flex";
+  }
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const email = document.getElementById("email").value;
+    const dob = document.getElementById("dob").value;
+    const ageConfirm = document.getElementById("ageConfirm").checked;
+
+    if (!email || !dob || !ageConfirm) {
+      alert("Please fill in all fields and confirm your age.");
+      return;
+    }
+
+    const birthYear = new Date(dob).getFullYear();
+    const currentYear = new Date().getFullYear();
+    const age = currentYear - birthYear;
+
+    if (age < 18) {
+      alert("You must be at least 18 years old to continue.");
+      return;
+    }
+
+    localStorage.setItem("sscwc_user", JSON.stringify({ email, dob, age }));
+    modal.style.display = "none";
+  });
+});
 // === SSCWC Chess Crypto Kings ===
 // Wallet connect + playable chess board with basic move rules
 
