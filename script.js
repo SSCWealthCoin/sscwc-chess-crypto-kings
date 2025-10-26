@@ -33,8 +33,7 @@ window.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-// === FIREBASE INITIALIZATION (optional) ===
-/*
+// === FIREBASE INITIALIZATION ===
 const firebaseConfig = {
   apiKey: "YOUR_API_KEY_HERE",
   authDomain: "YOUR_AUTH_DOMAIN_HERE",
@@ -48,10 +47,8 @@ const firebaseConfig = {
 const app = firebase.initializeApp(firebaseConfig);
 const db = firebase.database(app);
 const user = JSON.parse(localStorage.getItem("sscwc_user"));
-const gameRoom = db.ref("liveGame");
-*/
 
-// === CHESS SETUP ===
+// === GAME VARIABLES ===
 const connectBtn = document.getElementById("connect");
 const statusDiv = document.getElementById("status");
 const board = document.getElementById("board");
@@ -62,15 +59,87 @@ board.height = 400;
 const tileSize = 50;
 
 let selected = null;
-let turn = "white"; // white starts
+let turn = "white";
 let boardState = [];
+let playerColor = null; // will be white or black
+let roomId = null;
 
+// === ROOM JOINING ===
+async function joinOrCreateRoom() {
+  const roomsRef = db.ref("games");
+  const snapshot = await roomsRef.get();
+
+  // Try to find an open room with one player
+  let joined = false;
+  if (snapshot.exists()) {
+    snapshot.forEach((room) => {
+      const data = room.val();
+      if (data && data.players && Object.keys(data.players).length === 1 && !joined) {
+        roomId = room.key;
+        playerColor = data.players.white ? "black" : "white";
+        roomsRef.child(roomId + "/players/" + playerColor).set(user.email);
+        joined = true;
+      }
+    });
+  }
+
+  // If no open room, create one
+  if (!joined) {
+    roomId = roomsRef.push().key;
+    playerColor = "white";
+    await roomsRef.child(roomId).set({
+      players: { white: user.email },
+      boardState: defaultBoard(),
+      turn: "white"
+    });
+  }
+
+  console.log("Joined room:", roomId, "as", playerColor);
+  listenToRoom();
+}
+
+// === LIVE SYNC ===
+function listenToRoom() {
+  const gameRoom = db.ref("games/" + roomId);
+  gameRoom.on("value", (snapshot) => {
+    const data = snapshot.val();
+    if (data) {
+      boardState = data.boardState;
+      turn = data.turn;
+      draw();
+    }
+  });
+}
+
+function updateGame() {
+  if (!roomId) return;
+  const gameRoom = db.ref("games/" + roomId);
+  gameRoom.update({
+    boardState,
+    turn,
+    lastMove: new Date().toISOString()
+  });
+}
+
+// === CHESS LOGIC ===
 const pieces = {
   r: "♜", n: "♞", b: "♝", q: "♛", k: "♚", p: "♟",
   R: "♖", N: "♘", B: "♗", Q: "♕", K: "♔", P: "♙"
 };
 
-// === Draw Functions ===
+function defaultBoard() {
+  return [
+    ["r","n","b","q","k","b","n","r"],
+    ["p","p","p","p","p","p","p","p"],
+    ["","","","","","","",""],
+    ["","","","","","","",""],
+    ["","","","","","","",""],
+    ["","","","","","","",""],
+    ["P","P","P","P","P","P","P","P"],
+    ["R","N","B","Q","K","B","N","R"]
+  ];
+}
+
 function drawBoard() {
   for (let row = 0; row < 8; row++) {
     for (let col = 0; col < 8; col++) {
@@ -104,31 +173,13 @@ function draw() {
   drawPieces();
 }
 
-// === Board Setup ===
-function resetBoard() {
-  boardState = [
-    ["r","n","b","q","k","b","n","r"],
-    ["p","p","p","p","p","p","p","p"],
-    ["","","","","","","",""],
-    ["","","","","","","",""],
-    ["","","","","","","",""],
-    ["","","","","","","",""],
-    ["P","P","P","P","P","P","P","P"],
-    ["R","N","B","Q","K","B","N","R"]
-  ];
-  draw();
-}
-resetBoard();
-
-// === Helpers ===
-function isWhite(piece) { return piece && piece === piece.toUpperCase(); }
-function isBlack(piece) { return piece && piece === piece.toLowerCase(); }
+function isWhite(p) { return p && p === p.toUpperCase(); }
+function isBlack(p) { return p && p === p.toLowerCase(); }
 
 function pathClear(fromX, fromY, toX, toY) {
   const stepX = Math.sign(toX - fromX);
   const stepY = Math.sign(toY - fromY);
-  let x = fromX + stepX;
-  let y = fromY + stepY;
+  let x = fromX + stepX, y = fromY + stepY;
   while (x !== toX || y !== toY) {
     if (boardState[y][x]) return false;
     x += stepX; y += stepY;
@@ -148,6 +199,7 @@ function isValidMove(fromX, fromY, toX, toY) {
   const white = isWhite(piece);
   const color = white ? "white" : "black";
   if (color !== turn) return false;
+  if (color !== playerColor) return false; // prevent opponent from moving
   if (target && ((white && isWhite(target)) || (!white && isBlack(target)))) return false;
 
   switch (piece.toLowerCase()) {
@@ -160,31 +212,23 @@ function isValidMove(fromX, fromY, toX, toY) {
       }
       if (absX === 1 && dy === dir && target) return true;
       return false;
-    case "r":
-      if (dx !== 0 && dy !== 0) return false;
-      return pathClear(fromX, fromY, toX, toY);
-    case "b":
-      if (absX !== absY) return false;
-      return pathClear(fromX, fromY, toX, toY);
-    case "q":
-      if (absX === absY || dx === 0 || dy === 0) return pathClear(fromX, fromY, toX, toY);
-      return false;
-    case "n":
-      return (absX === 2 && absY === 1) || (absX === 1 && absY === 2);
-    case "k":
-      return absX <= 1 && absY <= 1;
-    default:
-      return false;
+    case "r": if (dx && dy) return false; return pathClear(fromX, fromY, toX, toY);
+    case "b": if (absX !== absY) return false; return pathClear(fromX, fromY, toX, toY);
+    case "q": if (absX === absY || dx === 0 || dy === 0) return pathClear(fromX, fromY, toX, toY);
+              return false;
+    case "n": return (absX === 2 && absY === 1) || (absX === 1 && absY === 2);
+    case "k": return absX <= 1 && absY <= 1;
+    default: return false;
   }
 }
 
-// === Move Events ===
+// === INTERACTION ===
 board.addEventListener("mousedown", (e) => {
   const rect = board.getBoundingClientRect();
   const x = Math.floor((e.clientX - rect.left) / tileSize);
   const y = Math.floor((e.clientY - rect.top) / tileSize);
   const piece = boardState[y][x];
-  if (piece && ((turn === "white" && isWhite(piece)) || (turn === "black" && isBlack(piece)))) {
+  if (piece && ((playerColor === "white" && isWhite(piece)) || (playerColor === "black" && isBlack(piece)))) {
     selected = { x, y, piece };
     draw();
   }
@@ -200,13 +244,17 @@ board.addEventListener("mouseup", (e) => {
     boardState[y][x] = selected.piece;
     boardState[selected.y][selected.x] = "";
     turn = turn === "white" ? "black" : "white";
-    draw();
-    // updateGame(); // uncomment once Firebase configured
+    updateGame();
   }
   selected = null;
 });
 
-// === Wallet Connect ===
+// === INITIALIZE GAME ===
+boardState = defaultBoard();
+draw();
+joinOrCreateRoom();
+
+// === WALLET CONNECT ===
 connectBtn.addEventListener("click", async () => {
   if (typeof window.ethereum === "undefined") {
     statusDiv.textContent = "MetaMask not found. Please install it.";
@@ -222,7 +270,7 @@ connectBtn.addEventListener("click", async () => {
 
     await window.ethereum.request({
       method: "wallet_switchEthereumChain",
-      params: [{ chainId: "0x61" }], // BSC Testnet
+      params: [{ chainId: "0x61" }],
     });
   } catch (err) {
     statusDiv.textContent = "Connection failed or rejected.";
