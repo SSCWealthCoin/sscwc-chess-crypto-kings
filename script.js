@@ -1,12 +1,12 @@
-// script.js - Multiplayer with Create / Join by Game ID (Firebase Realtime DB, ES modules)
+// script.js - Fixed mobile/touch input + reliable realtime move sync (copy-paste ready)
 
 // --- Firebase ES modules (CDN) ---
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
 import {
-  getDatabase, ref, get, set, update, onValue, push, child
+  getDatabase, ref, get, set, update, onValue, push
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
 
-// --- LOGIN & AGE VERIFICATION ---
+// --- LOGIN & AGE VERIFICATION (unchanged) ---
 window.addEventListener("DOMContentLoaded", () => {
   const modal = document.getElementById("loginModal");
   const form = document.getElementById("loginForm");
@@ -32,7 +32,6 @@ window.addEventListener("DOMContentLoaded", () => {
       alert("Invalid date of birth.");
       return;
     }
-    // basic year-based age check (approx)
     const diff = new Date().getTime() - birth.getTime();
     const age = Math.floor(diff / (1000 * 60 * 60 * 24 * 365.25));
     if (age < 18) {
@@ -42,12 +41,10 @@ window.addEventListener("DOMContentLoaded", () => {
 
     localStorage.setItem("sscwc_user", JSON.stringify({ email, dob, age }));
     modal.style.display = "none";
-
-    // If someone created/joined before logging in, we won't auto-join; user can click create/join after login.
   });
 });
 
-// --- FIREBASE CONFIG (using your provided config) ---
+// --- FIREBASE CONFIG (your config) ---
 const firebaseConfig = {
   apiKey: "AIzaSyAtmhhk9R1X0_s-CRIaDQwbtN2ZNqf8k7o",
   authDomain: "no-analytics-needed.firebaseapp.com",
@@ -79,6 +76,9 @@ let boardState = [];
 let playerColor = null;
 let roomId = null;
 let user = JSON.parse(localStorage.getItem("sscwc_user") || "null");
+
+// Prevent duplicate pointer events (mobile)
+let lastPointerId = null;
 
 // --- pieces map ---
 const pieces = {
@@ -115,6 +115,8 @@ function drawBoard() {
 }
 
 function drawPieces(){
+  ctx.clearRect(0,0,board.width,board.height);
+  drawBoard();
   ctx.font = "36px serif";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
@@ -127,7 +129,6 @@ function drawPieces(){
 }
 
 function draw(){
-  drawBoard();
   drawPieces();
 }
 
@@ -149,6 +150,8 @@ function pathClear(fromX, fromY, toX, toY){
 
 // basic move rules
 function isValidMove(fromX, fromY, toX, toY){
+  // bounds check
+  if (toX < 0 || toX > 7 || toY < 0 || toY > 7) return false;
   const piece = boardState[fromY][fromX];
   const target = boardState[toY][toX];
   const dx = toX - fromX;
@@ -201,7 +204,7 @@ async function createGame() {
   });
 
   updateUIAfterRoomJoin();
-  listenToRoom(); // start listening
+  listenToRoom();
   copyRoomLink();
 }
 
@@ -229,7 +232,6 @@ async function joinById(joinId) {
   } else if (!players.white) {
     playerColor = "white";
   } else {
-    // fallback
     playerColor = players.white === user.email ? "white" : (players.black === user.email ? "black" : null);
   }
 
@@ -252,11 +254,9 @@ function listenToRoom() {
   onValue(roomRef, (snap) => {
     const data = snap.val();
     if (!data) return;
-    // update board & turn (do not overwrite local if this client just made the change — but simple overwrite is fine here)
     boardState = data.boardState || boardState;
     turn = data.turn || turn;
     draw();
-    // show players
     const players = data.players || {};
     const white = players.white || "waiting...";
     const black = players.black || "waiting...";
@@ -287,34 +287,58 @@ function copyRoomLink() {
   });
 }
 
-// update UI after join/create
 function updateUIAfterRoomJoin() {
   statusDiv.style.color = "#b8ffb8";
   statusDiv.textContent = `Connected to room ${roomId} as ${playerColor}.`;
-  // write room param to URL (shallow, no reload)
   const url = new URL(window.location.href);
   url.searchParams.set("room", roomId);
   window.history.replaceState({}, "", url.toString());
 }
 
-// --- interaction events (board) ---
-board.addEventListener("mousedown", (e) => {
+// --- Pointer helpers (works for mouse & touch) ---
+function getBoardCoordsFromPointer(clientX, clientY) {
   const rect = board.getBoundingClientRect();
-  const x = Math.floor((e.clientX - rect.left) / tileSize);
-  const y = Math.floor((e.clientY - rect.top) / tileSize);
+  const x = Math.floor((clientX - rect.left) / tileSize);
+  const y = Math.floor((clientY - rect.top) / tileSize);
+  return { x, y };
+}
+
+// pointerdown (select piece)
+function handlePointerDown(ev) {
+  // prevent duplicate touch+mouse events
+  if (ev.pointerId && lastPointerId && ev.pointerId !== lastPointerId) return;
+  lastPointerId = ev.pointerId || "mouse";
+
+  // require that player has joined a room and has a color
+  if (!roomId || !playerColor) {
+    statusDiv.style.color = "#ffd180";
+    statusDiv.textContent = "You must join a game to move pieces.";
+    return;
+  }
+
+  const { x, y } = getBoardCoordsFromPointer(ev.clientX, ev.clientY);
+  if (x < 0 || x > 7 || y < 0 || y > 7) return;
   const piece = boardState[y][x];
   if (piece && ((playerColor === "white" && isWhite(piece)) || (playerColor === "black" && isBlack(piece)))) {
     selected = { x, y, piece };
     draw();
   }
-});
+}
 
-board.addEventListener("mouseup", async (e) => {
-  if (!selected) return;
-  const rect = board.getBoundingClientRect();
-  const x = Math.floor((e.clientX - rect.left) / tileSize);
-  const y = Math.floor((e.clientY - rect.top) / tileSize);
+// pointerup (attempt move)
+async function handlePointerUp(ev) {
+  // ignore if we never selected
+  if (!selected) { lastPointerId = null; return; }
 
+  const { x, y } = getBoardCoordsFromPointer(ev.clientX, ev.clientY);
+  if (x < 0 || x > 7 || y < 0 || y > 7) {
+    selected = null;
+    lastPointerId = null;
+    draw();
+    return;
+  }
+
+  // validate & make move
   if (isValidMove(selected.x, selected.y, x, y)) {
     // apply move locally
     boardState[y][x] = selected.piece;
@@ -323,14 +347,43 @@ board.addEventListener("mouseup", async (e) => {
     draw();
     // push update to db
     await updateGameInDB();
+  } else {
+    // optional: brief feedback
+    statusDiv.style.color = "#ffd180";
+    statusDiv.textContent = "Invalid move.";
+    setTimeout(() => { statusDiv.textContent = ""; }, 1000);
   }
+
   selected = null;
-});
+  lastPointerId = null;
+}
+
+// --- Bind pointer events (pointer API) with fallback ---
+if (window.PointerEvent) {
+  board.addEventListener("pointerdown", handlePointerDown);
+  board.addEventListener("pointerup", handlePointerUp);
+  board.addEventListener("pointercancel", () => { selected = null; lastPointerId = null; draw(); });
+} else {
+  // fallback for older browsers: mouse + touch
+  board.addEventListener("mousedown", handlePointerDown);
+  board.addEventListener("mouseup", handlePointerUp);
+  board.addEventListener("touchstart", (e) => {
+    const t = e.changedTouches[0];
+    handlePointerDown({ clientX: t.clientX, clientY: t.clientY, pointerId: "touch" });
+    e.preventDefault();
+  }, { passive: false });
+  board.addEventListener("touchend", (e) => {
+    const t = e.changedTouches[0];
+    handlePointerUp({ clientX: t.clientX, clientY: t.clientY, pointerId: "touch" });
+    e.preventDefault();
+  }, { passive: false });
+}
 
 // --- create/join button handlers ---
 createBtn.addEventListener("click", createGame);
 joinBtn.addEventListener("click", () => {
   const id = joinInput.value.trim();
+  if (!id) { alert("Please paste a Game ID to join."); return; }
   joinById(id);
 });
 
@@ -339,14 +392,12 @@ async function tryAutoJoinFromURL() {
   const params = new URLSearchParams(window.location.search);
   const r = params.get("room");
   if (r) {
-    // ensure user logged
     user = JSON.parse(localStorage.getItem("sscwc_user") || "null");
     if (!user) {
-      // open modal and instruct user to complete login, then they can press Join
       const modal = document.getElementById("loginModal");
       modal.style.display = "flex";
       statusDiv.style.color = "#ffd180";
-      statusDiv.textContent = "Please sign in to join the shared game (complete the modal then paste the room ID and press Join).";
+      statusDiv.textContent = "Please sign in to join the shared game (complete the modal then press Join).";
       joinInput.value = r;
       return;
     } else {
@@ -374,7 +425,6 @@ connectBtn.addEventListener("click", async () => {
         params: [{ chainId: "0x61" }],
       });
     } catch (switchErr) {
-      // ignore if user cancels or chain not available
       console.warn("Chain switch failed:", switchErr);
     }
   } catch (err) {
