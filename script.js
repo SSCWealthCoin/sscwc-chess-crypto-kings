@@ -31,7 +31,10 @@ window.addEventListener("DOMContentLoaded", () => {
     localStorage.setItem("sscwc_user", JSON.stringify({ email, dob, age }));
     modal.style.display = "none";
   });
-});// === FIREBASE INITIALIZATION ===
+});
+
+// === FIREBASE INITIALIZATION (optional) ===
+/*
 const firebaseConfig = {
   apiKey: "YOUR_API_KEY_HERE",
   authDomain: "YOUR_AUTH_DOMAIN_HERE",
@@ -42,37 +45,13 @@ const firebaseConfig = {
   appId: "YOUR_APP_ID_HERE"
 };
 
-// Initialize Firebase
 const app = firebase.initializeApp(firebaseConfig);
 const db = firebase.database(app);
-
-// Create or join a shared game room
 const user = JSON.parse(localStorage.getItem("sscwc_user"));
 const gameRoom = db.ref("liveGame");
+*/
 
-// Listen for board changes
-gameRoom.on("value", (snapshot) => {
-  const data = snapshot.val();
-  if (data && data.boardState) {
-    boardState = data.boardState;
-    turn = data.turn;
-    draw();
-  }
-});
-
-// Function to update Firebase when a move is made
-function updateGame() {
-  gameRoom.set({
-    boardState,
-    turn,
-    lastMove: new Date().toISOString(),
-    updatedBy: user?.email || "guest"
-  });
-}
-
-// === SSCWC Chess Crypto Kings ===
-// Wallet connect + playable chess board with basic move rules
-
+// === CHESS SETUP ===
 const connectBtn = document.getElementById("connect");
 const statusDiv = document.getElementById("status");
 const board = document.getElementById("board");
@@ -85,12 +64,13 @@ const tileSize = 50;
 let selected = null;
 let turn = "white"; // white starts
 let boardState = [];
+
 const pieces = {
   r: "♜", n: "♞", b: "♝", q: "♛", k: "♚", p: "♟",
-  R: "♖", N: "♘", B: "♗", Q: "♕", K: "♔", P: "♙",
+  R: "♖", N: "♘", B: "♗", Q: "♕", K: "♔", P: "♙"
 };
 
-// === Draw functions ===
+// === Draw Functions ===
 function drawBoard() {
   for (let row = 0; row < 8; row++) {
     for (let col = 0; col < 8; col++) {
@@ -124,7 +104,7 @@ function draw() {
   drawPieces();
 }
 
-// === Initialize board ===
+// === Board Setup ===
 function resetBoard() {
   boardState = [
     ["r","n","b","q","k","b","n","r"],
@@ -141,14 +121,21 @@ function resetBoard() {
 resetBoard();
 
 // === Helpers ===
-function isWhite(piece) {
-  return piece && piece === piece.toUpperCase();
-}
-function isBlack(piece) {
-  return piece && piece === piece.toLowerCase();
+function isWhite(piece) { return piece && piece === piece.toUpperCase(); }
+function isBlack(piece) { return piece && piece === piece.toLowerCase(); }
+
+function pathClear(fromX, fromY, toX, toY) {
+  const stepX = Math.sign(toX - fromX);
+  const stepY = Math.sign(toY - fromY);
+  let x = fromX + stepX;
+  let y = fromY + stepY;
+  while (x !== toX || y !== toY) {
+    if (boardState[y][x]) return false;
+    x += stepX; y += stepY;
+  }
+  return true;
 }
 
-// === Move validation ===
 function isValidMove(fromX, fromY, toX, toY) {
   const piece = boardState[fromY][fromX];
   const target = boardState[toY][toX];
@@ -158,14 +145,13 @@ function isValidMove(fromX, fromY, toX, toY) {
   const absY = Math.abs(dy);
 
   if (!piece) return false;
-
   const white = isWhite(piece);
   const color = white ? "white" : "black";
   if (color !== turn) return false;
   if (target && ((white && isWhite(target)) || (!white && isBlack(target)))) return false;
 
   switch (piece.toLowerCase()) {
-    case "p": // Pawn
+    case "p":
       const dir = white ? -1 : 1;
       const startRow = white ? 6 : 1;
       if (dx === 0 && !target) {
@@ -174,45 +160,25 @@ function isValidMove(fromX, fromY, toX, toY) {
       }
       if (absX === 1 && dy === dir && target) return true;
       return false;
-
-    case "r": // Rook
+    case "r":
       if (dx !== 0 && dy !== 0) return false;
       return pathClear(fromX, fromY, toX, toY);
-
-    case "b": // Bishop
+    case "b":
       if (absX !== absY) return false;
       return pathClear(fromX, fromY, toX, toY);
-
-    case "q": // Queen
-      if (absX === absY || dx === 0 || dy === 0)
-        return pathClear(fromX, fromY, toX, toY);
+    case "q":
+      if (absX === absY || dx === 0 || dy === 0) return pathClear(fromX, fromY, toX, toY);
       return false;
-
-    case "n": // Knight
+    case "n":
       return (absX === 2 && absY === 1) || (absX === 1 && absY === 2);
-
-    case "k": // King
+    case "k":
       return absX <= 1 && absY <= 1;
-
     default:
       return false;
   }
 }
 
-function pathClear(fromX, fromY, toX, toY) {
-  const stepX = Math.sign(toX - fromX);
-  const stepY = Math.sign(toY - fromY);
-  let x = fromX + stepX;
-  let y = fromY + stepY;
-  while (x !== toX || y !== toY) {
-    if (boardState[y][x]) return false;
-    x += stepX;
-    y += stepY;
-  }
-  return true;
-}
-
-// === Mouse events ===
+// === Move Events ===
 board.addEventListener("mousedown", (e) => {
   const rect = board.getBoundingClientRect();
   const x = Math.floor((e.clientX - rect.left) / tileSize);
@@ -230,18 +196,17 @@ board.addEventListener("mouseup", (e) => {
   const x = Math.floor((e.clientX - rect.left) / tileSize);
   const y = Math.floor((e.clientY - rect.top) / tileSize);
 
- if (isValidMove(selected.x, selected.y, x, y)) {
-  boardState[y][x] = selected.piece;
-  boardState[selected.y][selected.x] = "";
-  turn = turn === "white" ? "black" : "white";
-  updateGame(); // push update to Firebase
-}
-selected = null;
-draw();
-
+  if (isValidMove(selected.x, selected.y, x, y)) {
+    boardState[y][x] = selected.piece;
+    boardState[selected.y][selected.x] = "";
+    turn = turn === "white" ? "black" : "white";
+    draw();
+    // updateGame(); // uncomment once Firebase configured
+  }
+  selected = null;
 });
 
-// === Wallet connect ===
+// === Wallet Connect ===
 connectBtn.addEventListener("click", async () => {
   if (typeof window.ethereum === "undefined") {
     statusDiv.textContent = "MetaMask not found. Please install it.";
@@ -257,7 +222,7 @@ connectBtn.addEventListener("click", async () => {
 
     await window.ethereum.request({
       method: "wallet_switchEthereumChain",
-      params: [{ chainId: "0x61" }],
+      params: [{ chainId: "0x61" }], // BSC Testnet
     });
   } catch (err) {
     statusDiv.textContent = "Connection failed or rejected.";
