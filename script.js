@@ -1,3 +1,7 @@
+// === Load Firebase from CDN ===
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+import { getDatabase, ref, get, set, update, onValue, push } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+
 // === LOGIN & AGE VERIFICATION ===
 window.addEventListener("DOMContentLoaded", () => {
   const modal = document.getElementById("loginModal");
@@ -35,17 +39,17 @@ window.addEventListener("DOMContentLoaded", () => {
 
 // === FIREBASE INITIALIZATION ===
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY_HERE",
-  authDomain: "YOUR_AUTH_DOMAIN_HERE",
-  databaseURL: "YOUR_DATABASE_URL_HERE",
-  projectId: "YOUR_PROJECT_ID_HERE",
-  storageBucket: "YOUR_BUCKET_HERE",
-  messagingSenderId: "YOUR_SENDER_ID_HERE",
-  appId: "YOUR_APP_ID_HERE"
+  apiKey: "AIzaSyAtmhhk9R1X0_s-CRIaDQwbtN2ZNqf8k7o",
+  authDomain: "no-analytics-needed.firebaseapp.com",
+  databaseURL: "https://no-analytics-needed-default-rtdb.firebaseio.com",
+  projectId: "no-analytics-needed",
+  storageBucket: "no-analytics-needed.firebasestorage.app",
+  messagingSenderId: "338735995946",
+  appId: "1:338735995946:web:937c7387bfabe3d38cb753"
 };
 
-const app = firebase.initializeApp(firebaseConfig);
-const db = firebase.database(app);
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
 const user = JSON.parse(localStorage.getItem("sscwc_user"));
 
 // === GAME VARIABLES ===
@@ -61,15 +65,14 @@ const tileSize = 50;
 let selected = null;
 let turn = "white";
 let boardState = [];
-let playerColor = null; // will be white or black
+let playerColor = null;
 let roomId = null;
 
 // === ROOM JOINING ===
 async function joinOrCreateRoom() {
-  const roomsRef = db.ref("games");
-  const snapshot = await roomsRef.get();
+  const roomsRef = ref(db, "games");
+  const snapshot = await get(roomsRef);
 
-  // Try to find an open room with one player
   let joined = false;
   if (snapshot.exists()) {
     snapshot.forEach((room) => {
@@ -77,17 +80,16 @@ async function joinOrCreateRoom() {
       if (data && data.players && Object.keys(data.players).length === 1 && !joined) {
         roomId = room.key;
         playerColor = data.players.white ? "black" : "white";
-        roomsRef.child(roomId + "/players/" + playerColor).set(user.email);
+        set(ref(db, `games/${roomId}/players/${playerColor}`), user.email);
         joined = true;
       }
     });
   }
 
-  // If no open room, create one
   if (!joined) {
-    roomId = roomsRef.push().key;
+    roomId = push(roomsRef).key;
     playerColor = "white";
-    await roomsRef.child(roomId).set({
+    await set(ref(db, `games/${roomId}`), {
       players: { white: user.email },
       boardState: defaultBoard(),
       turn: "white"
@@ -100,8 +102,8 @@ async function joinOrCreateRoom() {
 
 // === LIVE SYNC ===
 function listenToRoom() {
-  const gameRoom = db.ref("games/" + roomId);
-  gameRoom.on("value", (snapshot) => {
+  const gameRoom = ref(db, "games/" + roomId);
+  onValue(gameRoom, (snapshot) => {
     const data = snapshot.val();
     if (data) {
       boardState = data.boardState;
@@ -113,8 +115,7 @@ function listenToRoom() {
 
 function updateGame() {
   if (!roomId) return;
-  const gameRoom = db.ref("games/" + roomId);
-  gameRoom.update({
+  update(ref(db, "games/" + roomId), {
     boardState,
     turn,
     lastMove: new Date().toISOString()
@@ -199,7 +200,7 @@ function isValidMove(fromX, fromY, toX, toY) {
   const white = isWhite(piece);
   const color = white ? "white" : "black";
   if (color !== turn) return false;
-  if (color !== playerColor) return false; // prevent opponent from moving
+  if (color !== playerColor) return false;
   if (target && ((white && isWhite(target)) || (!white && isBlack(target)))) return false;
 
   switch (piece.toLowerCase()) {
