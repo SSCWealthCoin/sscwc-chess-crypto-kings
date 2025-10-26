@@ -5,47 +5,37 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SSCWC Chess Crypto Kings</title>
   <link rel="stylesheet" href="style.css" />
-  <script defer src="script.js"></script>
+
+  <!-- Firebase SDKs (leave included even if config is blank) -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 </head>
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js"></script>
-<body>  <canvas id="board"></canvas>
-
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js"></script>
-  <script defer src="script.js"></script>
-</body>
-</html>
-
-  <!-- Login Modal -->
+<body>
+  <!-- === LOGIN MODAL === -->
   <div id="loginModal" class="modal">
-    <div class="modal-content">
+    <form id="loginForm" class="modal-content">
       <h2>Welcome to SSCWC Chess Crypto Kings</h2>
-      <p>To continue, please confirm you are 18 years or older.</p>
+      <p>Please verify you are 18+ to continue.</p>
 
-      <form id="loginForm">
-        <label>Email:</label><br />
-        <input type="email" id="email" required /><br />
+      <input type="email" id="email" placeholder="Enter your email" required /><br><br>
+      <label>Date of Birth:</label><br>
+      <input type="date" id="dob" required /><br><br>
 
-        <label>Date of Birth:</label><br />
-        <input type="date" id="dob" required /><br />
+      <label>
+        <input type="checkbox" id="ageConfirm" />
+        I confirm I am at least 18 years old
+      </label><br><br>
 
-        <label>
-          <input type="checkbox" id="ageConfirm" required />
-          I confirm I am 18 years of age or older.
-        </label><br /><br />
-
-        <button type="submit">Enter</button>
-      </form>
-    </div>
+      <button type="submit">Continue</button>
+    </form>
   </div>
 
-  <!-- Chess App -->
+  <!-- === MAIN CONTENT === -->
   <h1>SSCWC Chess Crypto Kings</h1>
   <button id="connect">Connect Wallet (BSC Testnet)</button>
   <div id="status"></div>
   <canvas id="board"></canvas>
+
+  <script defer src="script.js"></script>
 </body>
 </html>
