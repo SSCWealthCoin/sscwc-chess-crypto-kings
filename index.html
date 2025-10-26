@@ -8,6 +8,30 @@
   <script defer src="script.js"></script>
 </head>
 <body>
+  <!-- Login Modal -->
+  <div id="loginModal" class="modal">
+    <div class="modal-content">
+      <h2>Welcome to SSCWC Chess Crypto Kings</h2>
+      <p>To continue, please confirm you are 18 years or older.</p>
+
+      <form id="loginForm">
+        <label>Email:</label><br />
+        <input type="email" id="email" required /><br />
+
+        <label>Date of Birth:</label><br />
+        <input type="date" id="dob" required /><br />
+
+        <label>
+          <input type="checkbox" id="ageConfirm" required />
+          I confirm I am 18 years of age or older.
+        </label><br /><br />
+
+        <button type="submit">Enter</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Chess App -->
   <h1>SSCWC Chess Crypto Kings</h1>
   <button id="connect">Connect Wallet (BSC Testnet)</button>
   <div id="status"></div>
