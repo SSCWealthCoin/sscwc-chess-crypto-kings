@@ -31,7 +31,45 @@ window.addEventListener("DOMContentLoaded", () => {
     localStorage.setItem("sscwc_user", JSON.stringify({ email, dob, age }));
     modal.style.display = "none";
   });
+});// === FIREBASE INITIALIZATION ===
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY_HERE",
+  authDomain: "YOUR_AUTH_DOMAIN_HERE",
+  databaseURL: "YOUR_DATABASE_URL_HERE",
+  projectId: "YOUR_PROJECT_ID_HERE",
+  storageBucket: "YOUR_BUCKET_HERE",
+  messagingSenderId: "YOUR_SENDER_ID_HERE",
+  appId: "YOUR_APP_ID_HERE"
+};
+
+// Initialize Firebase
+const app = firebase.initializeApp(firebaseConfig);
+const db = firebase.database(app);
+
+// Create or join a shared game room
+const user = JSON.parse(localStorage.getItem("sscwc_user"));
+const gameRoom = db.ref("liveGame");
+
+// Listen for board changes
+gameRoom.on("value", (snapshot) => {
+  const data = snapshot.val();
+  if (data && data.boardState) {
+    boardState = data.boardState;
+    turn = data.turn;
+    draw();
+  }
 });
+
+// Function to update Firebase when a move is made
+function updateGame() {
+  gameRoom.set({
+    boardState,
+    turn,
+    lastMove: new Date().toISOString(),
+    updatedBy: user?.email || "guest"
+  });
+}
+
 // === SSCWC Chess Crypto Kings ===
 // Wallet connect + playable chess board with basic move rules
 
@@ -192,13 +230,15 @@ board.addEventListener("mouseup", (e) => {
   const x = Math.floor((e.clientX - rect.left) / tileSize);
   const y = Math.floor((e.clientY - rect.top) / tileSize);
 
-  if (isValidMove(selected.x, selected.y, x, y)) {
-    boardState[y][x] = selected.piece;
-    boardState[selected.y][selected.x] = "";
-    turn = turn === "white" ? "black" : "white";
-  }
-  selected = null;
-  draw();
+ if (isValidMove(selected.x, selected.y, x, y)) {
+  boardState[y][x] = selected.piece;
+  boardState[selected.y][selected.x] = "";
+  turn = turn === "white" ? "black" : "white";
+  updateGame(); // push update to Firebase
+}
+selected = null;
+draw();
+
 });
 
 // === Wallet connect ===
