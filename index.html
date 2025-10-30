@@ -55,41 +55,13 @@
 
     #chessContainer {
       width: 100%;
-      height: 75vh;
+      height: 70vh;
       margin-top: 20px;
     }
   </style>
 </head>
 
 <body>
-
-  <!-- LOGIN MODAL -->
-  <div id="loginModal" style="
-    display:none;
-    position:fixed;inset:0;
-    background:rgba(0,0,0,0.85);
-    justify-content:center;align-items:center;z-index:1000;">
-    <form id="loginForm" style="
-      background:#fff;color:#000;padding:24px;border-radius:10px;
-      width:320px;display:flex;flex-direction:column;gap:10px;">
-      <h2>Welcome to SSCWC Chess Crypto Kings</h2>
-      <p>Please verify you are 18+ to continue.</p>
-
-      <label>Email:
-        <input id="email" type="email" placeholder="you@example.com" required style="width:100%;padding:8px;margin-top:6px;" />
-      </label>
-
-      <label>Date of Birth:
-        <input id="dob" type="date" required style="width:100%;padding:8px;margin-top:6px;" />
-      </label>
-
-      <label>
-        <input id="ageConfirm" type="checkbox" /> I confirm I am at least 18 years old
-      </label>
-
-      <button type="submit" style="padding:10px;border-radius:6px;border:none;background:#007bff;color:#fff;cursor:pointer;">Continue</button>
-    </form>
-  </div>
 
   <h1>SSCWC Chess Crypto Kings</h1>
 
@@ -115,124 +87,110 @@
 
   <!-- Libraries -->
   <script src="https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chess.js@1.0.0/dist/chess.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.157.0/examples/js/loaders/GLTFLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chess.js@1.0.0-beta.6/dist/chess.min.js"></script>
 
   <script>
-    // --- SETUP ---
+    // === Scene Setup ===
+    const container = document.getElementById("chessContainer");
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(50, window.innerWidth/(window.innerHeight*0.75), 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ antialias:true });
-    renderer.setSize(window.innerWidth, window.innerHeight*0.75);
-    document.getElementById("chessContainer").appendChild(renderer.domElement);
+    const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setClearColor(0x202020);
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    container.appendChild(renderer.domElement);
 
-    // Lighting
-    const ambient = new THREE.AmbientLight(0xffffff, 0.6);
-    scene.add(ambient);
-    const point = new THREE.PointLight(0xffffff, 0.9);
-    point.position.set(5,10,5);
-    scene.add(point);
+    // === Lighting ===
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+    scene.add(ambientLight);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    directionalLight.position.set(5, 10, 5);
+    scene.add(directionalLight);
 
-    // Board
+    // === Camera Position ===
+    camera.position.set(5, 8, 8);
+    camera.lookAt(0, 0, 0);
+
+    // === Chessboard ===
     const board = new THREE.Group();
     const tileSize = 1;
-    const boardSize = 8;
-    const tiles = [];
-    for(let x=0;x<boardSize;x++){
-      for(let z=0;z<boardSize;z++){
-        const color = (x+z)%2===0 ? 0xeeeeee : 0x663300;
+    const darkColor = 0x4b3621;
+    const lightColor = 0xecd9b0;
+
+    for (let x = 0; x < 8; x++) {
+      for (let z = 0; z < 8; z++) {
+        const color = (x + z) % 2 === 0 ? lightColor : darkColor;
         const tile = new THREE.Mesh(
-          new THREE.BoxGeometry(tileSize,0.1,tileSize),
-          new THREE.MeshPhongMaterial({color})
+          new THREE.BoxGeometry(tileSize, 0.05, tileSize),
+          new THREE.MeshPhongMaterial({ color })
         );
-        tile.position.set(x-3.5,0,z-3.5);
+        tile.position.set(x - 3.5, 0, z - 3.5);
         board.add(tile);
-        tiles.push({mesh:tile,coord:{x,z}});
       }
     }
     scene.add(board);
 
-    // Camera
-    camera.position.set(4,6,8);
-    camera.lookAt(0,0,0);
-
-    // Chess engine
+    // === Load Realistic Chess Pieces ===
+    const loader = new THREE.GLTFLoader();
     const game = new Chess();
-    const whiteMat = new THREE.MeshPhongMaterial({color:0xffffff});
-    const blackMat = new THREE.MeshPhongMaterial({color:0x111111});
-    const pieceGeo = new THREE.CylinderGeometry(0.3,0.3,0.8,32);
     const pieces = {};
 
-    function addPiece(name,color,file,rank){
-      const mesh = new THREE.Mesh(pieceGeo, color==='w'?whiteMat:blackMat);
-      mesh.position.set(file-3.5,0.5,rank-3.5);
-      mesh.userData = {square:String.fromCharCode(97+file)+(8-rank),color};
-      scene.add(mesh);
-      pieces[mesh.userData.square] = mesh;
+    const pieceModels = {
+      p: "https://assets.mixkit.co/3d/chess-pawn.glb",
+      r: "https://assets.mixkit.co/3d/chess-rook.glb",
+      n: "https://assets.mixkit.co/3d/chess-knight.glb",
+      b: "https://assets.mixkit.co/3d/chess-bishop.glb",
+      q: "https://assets.mixkit.co/3d/chess-queen.glb",
+      k: "https://assets.mixkit.co/3d/chess-king.glb"
+    };
+
+    function addPiece(type, color, file, rank) {
+      const url = pieceModels[type];
+      if (!url) return;
+      loader.load(url, (gltf) => {
+        const piece = gltf.scene.clone();
+        piece.scale.set(0.5, 0.5, 0.5);
+        piece.position.set(file - 3.5, 0.1, rank - 3.5);
+        if (color === "b") piece.rotation.y = Math.PI;
+        piece.traverse((child) => {
+          if (child.isMesh) {
+            child.material = new THREE.MeshPhongMaterial({
+              color: color === "w" ? 0xffffff : 0x111111,
+            });
+          }
+        });
+        scene.add(piece);
+        const square = String.fromCharCode(97 + file) + (8 - rank);
+        pieces[square] = piece;
+      });
     }
 
-    // initial placement
-    for(let i=0;i<8;i++){
-      addPiece('p','w',i,6);
-      addPiece('p','b',i,1);
-    }
-
-    // Click control
-    const raycaster = new THREE.Raycaster();
-    const mouse = new THREE.Vector2();
-    let selected = null;
-
-    function onMouseClick(event){
-      mouse.x = (event.clientX / window.innerWidth)*2 - 1;
-      mouse.y = - (event.clientY / (window.innerHeight*0.75))*2 + 1;
-      raycaster.setFromCamera(mouse, camera);
-      const intersects = raycaster.intersectObjects([...Object.values(pieces),...tiles.map(t=>t.mesh)]);
-      if(intersects.length>0){
-        const obj = intersects[0].object;
-        if(obj.userData.square){ // piece
-          if(!selected || obj.userData.color === game.turn()){
-            if(selected) selected.material.emissive.set(0x000000);
-            selected = obj;
-            selected.material.emissive.set(0x00ff00);
-          }
-        } else { // tile click
-          if(selected){
-            const targetTile = intersects[0].object;
-            const x = Math.round(targetTile.position.x+3.5);
-            const z = Math.round(targetTile.position.z+3.5);
-            const toSquare = String.fromCharCode(97+x)+(8-z);
-            const move = game.move({from:selected.userData.square,to:toSquare,promotion:'q'});
-            if(move){
-              pieces[toSquare]?.removeFromParent();
-              pieces[toSquare] = selected;
-              delete pieces[selected.userData.square];
-              selected.userData.square = toSquare;
-              const newPos = new THREE.Vector3(x-3.5,0.5,z-3.5);
-              selected.position.copy(newPos);
-            }
-            selected.material.emissive.set(0x000000);
-            selected = null;
-          }
+    function setupBoard() {
+      const boardState = game.board();
+      for (let rank = 0; rank < 8; rank++) {
+        for (let file = 0; file < 8; file++) {
+          const piece = boardState[rank][file];
+          if (piece) addPiece(piece.type, piece.color, file, rank);
         }
       }
     }
 
-    window.addEventListener('click',onMouseClick);
+    setupBoard();
 
-    function animate(){
+    // === Render Loop ===
+    function animate() {
       requestAnimationFrame(animate);
-      board.rotation.y += 0.001;
-      renderer.render(scene,camera);
+      renderer.render(scene, camera);
     }
     animate();
 
-    window.addEventListener("resize",()=>{
-      camera.aspect=window.innerWidth/(window.innerHeight*0.75);
+    // === Responsive Resize ===
+    window.addEventListener("resize", () => {
+      camera.aspect = container.clientWidth / container.clientHeight;
       camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth,window.innerHeight*0.75);
+      renderer.setSize(container.clientWidth, container.clientHeight);
     });
   </script>
-
-  <script type="module" src="script.js"></script>
 
 </body>
 </html>
