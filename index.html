@@ -9,7 +9,7 @@
       margin: 0;
       background: #000;
       color: #fff;
-      font-family: "Poppins", "Segoe UI Symbol", "Noto Emoji", Arial, sans-serif;
+      font-family: "Poppins", Arial, sans-serif;
       text-align: center;
       overflow-x: hidden;
     }
@@ -132,6 +132,7 @@
       grid-template-rows: repeat(8, 1fr);
       border: 2px solid gold;
       box-shadow: 0 0 15px gold;
+      font-family: "DejaVu Sans", "Segoe UI Symbol", "Noto Sans Symbols", "Arial Unicode MS", sans-serif;
     }
 
     .square {
@@ -142,7 +143,6 @@
       align-items: center;
       font-size: 40px;
       cursor: pointer;
-      font-family: "Segoe UI Symbol", "Noto Emoji", Arial, sans-serif;
     }
 
     .light { background: #f0d9b5; }
@@ -218,13 +218,6 @@
           board.appendChild(square);
         }
       }
-
-      document.getElementById("connect").onclick = () => alert("Wallet connected (test simulation)");
-      document.getElementById("createBtn").onclick = () => alert("New SSCWC Chess game created!");
-      document.getElementById("joinBtn").onclick = () => {
-        const id = document.getElementById("joinInput").value.trim();
-        alert(id ? "Joining game: " + id : "Please enter a valid Game ID.");
-      };
     });
   </script>
 </body>
