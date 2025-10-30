@@ -4,7 +4,6 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>SSCWC Chess Crypto Kings</title>
-  <link rel="stylesheet" href="style.css" />
   <style>
     body {
       background: #1e1e1e;
@@ -50,9 +49,6 @@
       color: #fff;
     }
 
-    #status { margin-bottom: 6px; font-weight: bold; color: #ff4d4d; }
-    #roomInfo { margin-bottom: 8px; color: #ddd; }
-
     #chessContainer {
       width: 100%;
       height: 70vh;
@@ -62,11 +58,9 @@
 </head>
 
 <body>
-
   <h1>SSCWC Chess Crypto Kings</h1>
 
-  <!-- Buttons -->
-  <a href="https://app.uniswap.org/explore/tokens/bnb/0xd7deadbf768dec8ac13850e4f6787ac53a9d0447?utm_medium=mobile&utm_source=share-tdp" 
+  <a href="https://app.uniswap.org/explore/tokens/bnb/0xd7deadbf768dec8ac13850e4f6787ac53a9d0447"
      target="_blank" rel="noopener noreferrer" class="uniswap-btn">
     💎 Get SSCWC on Uniswap
   </a>
@@ -80,18 +74,13 @@
     </div>
   </div>
 
-  <div id="status"></div>
-  <div id="roomInfo"></div>
-
   <div id="chessContainer"></div>
 
   <!-- Libraries -->
   <script src="https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.157.0/examples/js/loaders/GLTFLoader.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chess.js@1.0.0-beta.6/dist/chess.min.js"></script>
 
   <script>
-    // === Scene Setup ===
     const container = document.getElementById("chessContainer");
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
@@ -100,23 +89,22 @@
     renderer.setSize(container.clientWidth, container.clientHeight);
     container.appendChild(renderer.domElement);
 
-    // === Lighting ===
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
-    scene.add(ambientLight);
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-    directionalLight.position.set(5, 10, 5);
-    scene.add(directionalLight);
+    // Lighting
+    const ambient = new THREE.AmbientLight(0xffffff, 0.8);
+    scene.add(ambient);
+    const directional = new THREE.DirectionalLight(0xffffff, 0.6);
+    directional.position.set(5, 10, 5);
+    scene.add(directional);
 
-    // === Camera Position ===
-    camera.position.set(5, 8, 8);
+    // Camera
+    camera.position.set(5, 7, 8);
     camera.lookAt(0, 0, 0);
 
-    // === Chessboard ===
+    // Chessboard
     const board = new THREE.Group();
     const tileSize = 1;
-    const darkColor = 0x4b3621;
-    const lightColor = 0xecd9b0;
-
+    const lightColor = 0xf0d9b5;
+    const darkColor = 0xb58863;
     for (let x = 0; x < 8; x++) {
       for (let z = 0; z < 8; z++) {
         const color = (x + z) % 2 === 0 ? lightColor : darkColor;
@@ -130,42 +118,41 @@
     }
     scene.add(board);
 
-    // === Load Realistic Chess Pieces ===
-    const loader = new THREE.GLTFLoader();
+    // Chess.js setup
     const game = new Chess();
+
+    const whiteMat = new THREE.MeshPhongMaterial({ color: 0xffffff });
+    const blackMat = new THREE.MeshPhongMaterial({ color: 0x111111 });
     const pieces = {};
 
-    const pieceModels = {
-      p: "https://assets.mixkit.co/3d/chess-pawn.glb",
-      r: "https://assets.mixkit.co/3d/chess-rook.glb",
-      n: "https://assets.mixkit.co/3d/chess-knight.glb",
-      b: "https://assets.mixkit.co/3d/chess-bishop.glb",
-      q: "https://assets.mixkit.co/3d/chess-queen.glb",
-      k: "https://assets.mixkit.co/3d/chess-king.glb"
-    };
-
-    function addPiece(type, color, file, rank) {
-      const url = pieceModels[type];
-      if (!url) return;
-      loader.load(url, (gltf) => {
-        const piece = gltf.scene.clone();
-        piece.scale.set(0.5, 0.5, 0.5);
-        piece.position.set(file - 3.5, 0.1, rank - 3.5);
-        if (color === "b") piece.rotation.y = Math.PI;
-        piece.traverse((child) => {
-          if (child.isMesh) {
-            child.material = new THREE.MeshPhongMaterial({
-              color: color === "w" ? 0xffffff : 0x111111,
-            });
-          }
-        });
-        scene.add(piece);
-        const square = String.fromCharCode(97 + file) + (8 - rank);
-        pieces[square] = piece;
-      });
+    function makePieceMesh(type, color) {
+      let mesh;
+      const material = color === 'w' ? whiteMat : blackMat;
+      if (type === 'p') {
+        mesh = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.8, 32), material);
+      } else if (type === 'r') {
+        mesh = new THREE.Mesh(new THREE.BoxGeometry(0.6, 1, 0.6), material);
+      } else if (type === 'n') {
+        mesh = new THREE.Mesh(new THREE.ConeGeometry(0.4, 1, 32), material);
+      } else if (type === 'b') {
+        mesh = new THREE.Mesh(new THREE.ConeGeometry(0.35, 1.1, 32), material);
+      } else if (type === 'q') {
+        mesh = new THREE.Mesh(new THREE.SphereGeometry(0.5, 32, 32), material);
+      } else if (type === 'k') {
+        mesh = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 1.2, 32), material);
+      }
+      return mesh;
     }
 
-    function setupBoard() {
+    function addPiece(type, color, file, rank) {
+      const mesh = makePieceMesh(type, color);
+      mesh.position.set(file - 3.5, 0.5, rank - 3.5);
+      scene.add(mesh);
+      const square = String.fromCharCode(97 + file) + (8 - rank);
+      pieces[square] = mesh;
+    }
+
+    function setupPieces() {
       const boardState = game.board();
       for (let rank = 0; rank < 8; rank++) {
         for (let file = 0; file < 8; file++) {
@@ -175,22 +162,21 @@
       }
     }
 
-    setupBoard();
+    setupPieces();
 
-    // === Render Loop ===
+    // Render Loop
     function animate() {
       requestAnimationFrame(animate);
       renderer.render(scene, camera);
     }
     animate();
 
-    // === Responsive Resize ===
+    // Resize
     window.addEventListener("resize", () => {
       camera.aspect = container.clientWidth / container.clientHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(container.clientWidth, container.clientHeight);
     });
   </script>
-
 </body>
 </html>
