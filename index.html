@@ -5,7 +5,9 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>SSCWC Chess Crypto Kings</title>
   <style>
-    /* Page / header styling (keeps your gold coin and layout) */
+    /* reset box-sizing for predictable layout */
+    *, *::before, *::after { box-sizing: border-box; }
+
     body {
       margin: 0;
       background: #000;
@@ -21,7 +23,6 @@
       letter-spacing: 1px;
       margin: 10px 0 0;
     }
-
     h2.slogan {
       font-style: italic;
       color: #ffd700;
@@ -41,7 +42,6 @@
       overflow: hidden;
     }
 
-    /* Flat embossed gold coin at top (unchanged) */
     .coin {
       position: relative;
       width: 120px;
@@ -62,14 +62,11 @@
       position: absolute;
       font-size: 64px;
       color: #fff8dc;
-      text-shadow:
-        0 0 2px #b8860b,
-        0 0 10px rgba(255,215,0,0.35);
+      text-shadow: 0 0 2px #b8860b, 0 0 10px rgba(255,215,0,0.35);
       font-weight: bold;
     }
     @keyframes spin { 0% { transform: rotateY(0deg); } 100% { transform: rotateY(360deg); } }
 
-    /* Buttons */
     a.uniswap-btn, button {
       padding: 10px 16px;
       border: none;
@@ -102,10 +99,11 @@
       background: radial-gradient(circle at center, #000 60%, #111 100%);
     }
 
-    /* The board */
+    /* Responsive square board that always stays square */
     #board {
-      width: 480px;
-      height: 480px;
+      /* limits to 480px wide on large screens, and fit 92% of viewport width on small screens */
+      width: min(480px, 92vw);
+      aspect-ratio: 1 / 1;             /* ensures a perfect square */
       display: grid;
       grid-template-columns: repeat(8, 1fr);
       grid-template-rows: repeat(8, 1fr);
@@ -115,44 +113,38 @@
     }
 
     .square {
-      width: 60px;
-      height: 60px;
+      /* fill the grid cell; use aspect-ratio for safe sizing */
+      width: 100%;
+      height: 100%;
       display: flex;
       justify-content: center;
       align-items: center;
       cursor: pointer;
       position: relative;
+      user-select: none;
     }
     .light { background: #f0d9b5; }
     .dark { background: #b58863; }
 
-    /* pieces are inline SVGs inside .piece */
+    /* pieces are inline SVGs; they scale with the square */
     .piece {
-      width: 52px;
-      height: 52px;
+      width: 78%;    /* relative to each square */
+      height: 78%;
       display: block;
       pointer-events: none; /* static for now */
     }
 
     /* small responsive adjustments */
     @media (max-width: 720px) {
-      #board { width: 360px; height: 360px; }
-      .square { width: 45px; height: 45px; }
-      .piece { width: 40px; height: 40px; }
+      .piece { width: 74%; height: 74%; }
     }
     @media (max-width: 420px) {
-      #board { width: 320px; height: 320px; }
-      .square { width: 40px; height: 40px; }
-      .piece { width: 36px; height: 36px; }
+      .piece { width: 70%; height: 70%; }
     }
 
-    /* embossed rim look for pieces (subtle) */
-    .piece .rim { opacity: 0.95; }
-    .piece .inner { opacity: 0.98; }
   </style>
 </head>
 <body>
-
   <div id="top3D"><div class="coin"></div></div>
 
   <h1>SSCWC Chess Crypto Kings</h1>
@@ -171,102 +163,73 @@
   </div>
 
   <div id="chessContainer">
-    <div id="board"></div>
+    <div id="board" aria-label="Chessboard"></div>
   </div>
 
   <script>
-  /*
-    This script:
-     - Builds board squares,
-     - Inserts flat metallic SVG tokens for pieces (gold = white, silver = black),
-     - Sets up the standard initial position.
-  */
+    document.addEventListener('DOMContentLoaded', () => {
+      const board = document.getElementById('board');
+      const files = ['a','b','c','d','e','f','g','h'];
 
-  document.addEventListener('DOMContentLoaded', () => {
-    const board = document.getElementById('board');
-    const files = ['a','b','c','d','e','f','g','h'];
+      function makePieceSVG(type, color) {
+        const gold = '#D4AF37';
+        const goldRim = '#B8860B';
+        const silver = '#C0C0C0';
+        const silverRim = '#9E9E9E';
+        const fill = color === 'white' ? gold : silver;
+        const rim  = color === 'white' ? goldRim : silverRim;
+        const stroke = color === 'white' ? '#7a5a00' : '#666666';
+        const label = { 'K':'K','Q':'Q','R':'R','B':'B','N':'N','P':'P' }[type] || '?';
 
-    // SVG generator for a token piece
-    // type: 'K','Q','R','B','N','P'
-    // color: 'white' or 'black'  (white -> gold, black -> silver)
-    function makePieceSVG(type, color) {
-      // base colors
-      const gold = '#D4AF37';      // warm gold fill
-      const goldRim = '#B8860B';   // rim/darker gold
-      const silver = '#C0C0C0';
-      const silverRim = '#9E9E9E';
-      const fill = color === 'white' ? gold : silver;
-      const rim  = color === 'white' ? goldRim : silverRim;
-      const stroke = color === 'white' ? '#7a5a00' : '#666666';
-
-      // Label letter for the piece (flat embossed style)
-      const label = {
-        'K':'K','Q':'Q','R':'R','B':'B','N':'N','P':'P'
-      }[type] || '?';
-
-      // SVG markup: circular token with rim + embossed label
-      // text uses a system sans-serif; size tuned to the piece container
-      return `
-        <svg class="piece" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${color} ${type}">
-          <!-- rim -->
-          <circle class="rim" cx="60" cy="60" r="56" fill="${rim}" />
-          <!-- inner face -->
-          <circle class="inner" cx="60" cy="60" r="48" fill="${fill}" />
-          <!-- subtle inner highlight (top-left) -->
-          <ellipse cx="45" cy="45" rx="22" ry="12" fill="rgba(255,255,255,0.08)" />
-          <!-- embossed letter (flat) -->
-          <text x="60" y="70" text-anchor="middle" font-family="Arial, Helvetica, sans-serif"
-                font-size="56" font-weight="700" fill="${color === 'white' ? '#fffaf0' : '#f2f2f2'}"
-                stroke="${stroke}" stroke-width="1">
-            ${label}
-          </text>
-          <!-- small inner shadow (bottom-right) -->
-          <ellipse cx="72" cy="74" rx="28" ry="10" fill="rgba(0,0,0,0.08)" />
-        </svg>
-      `.trim();
-    }
-
-    // initial setup mapping (rank => array of 8)
-    const initialSetup = {
-      8: ['R','N','B','Q','K','B','N','R'], // black major pieces
-      7: ['P','P','P','P','P','P','P','P'], // black pawns
-      2: ['P','P','P','P','P','P','P','P'], // white pawns
-      1: ['R','N','B','Q','K','B','N','R']  // white major pieces
-    };
-
-    // create squares and place SVG pieces
-    for (let rankIndex = 0; rankIndex < 8; rankIndex++) {
-      for (let fileIndex = 0; fileIndex < 8; fileIndex++) {
-        const rank = 8 - rankIndex;
-        const square = document.createElement('div');
-        square.className = 'square ' + ((rankIndex + fileIndex) % 2 === 0 ? 'light' : 'dark');
-        square.dataset.square = files[fileIndex] + rank;
-
-        // check for piece on this rank/file
-        const pieceChar = (initialSetup[rank] && initialSetup[rank][fileIndex]) ? initialSetup[rank][fileIndex] : null;
-        if (pieceChar) {
-          // choose color: ranks 1-2 = white (gold), ranks 7-8 = black (silver)
-          const color = (rank <= 2) ? 'white' : 'black';
-          // create wrapper to insert SVG markup
-          const wrapper = document.createElement('div');
-          wrapper.innerHTML = makePieceSVG(pieceChar, color);
-          // append the svg node (first child)
-          const svgNode = wrapper.firstElementChild;
-          if (svgNode) square.appendChild(svgNode);
-        }
-
-        board.appendChild(square);
+        return `
+          <svg class="piece" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${color} ${type}">
+            <circle class="rim" cx="60" cy="60" r="56" fill="${rim}" />
+            <circle class="inner" cx="60" cy="60" r="48" fill="${fill}" />
+            <ellipse cx="45" cy="45" rx="22" ry="12" fill="rgba(255,255,255,0.08)" />
+            <text x="60" y="70" text-anchor="middle" font-family="Arial, Helvetica, sans-serif"
+                  font-size="56" font-weight="700" fill="${color === 'white' ? '#fffaf0' : '#f2f2f2'}"
+                  stroke="${stroke}" stroke-width="1">${label}</text>
+            <ellipse cx="72" cy="74" rx="28" ry="10" fill="rgba(0,0,0,0.08)" />
+          </svg>
+        `.trim();
       }
-    }
 
-    // small demo hooks for the buttons (placeholder)
-    document.getElementById('connect').onclick = () => alert('Wallet connected (demo)');
-    document.getElementById('createBtn').onclick = () => alert('Create game (demo)');
-    document.getElementById('joinBtn').onclick = () => {
-      const id = document.getElementById('joinInput').value.trim();
-      alert(id ? 'Joining: ' + id : 'Please enter a Game ID');
-    };
-  });
+      const initialSetup = {
+        8: ['R','N','B','Q','K','B','N','R'],
+        7: ['P','P','P','P','P','P','P','P'],
+        2: ['P','P','P','P','P','P','P','P'],
+        1: ['R','N','B','Q','K','B','N','R']
+      };
+
+      // Build 8x8 squares — robust even on small screens
+      for (let rankIndex = 0; rankIndex < 8; rankIndex++) {
+        for (let fileIndex = 0; fileIndex < 8; fileIndex++) {
+          const rank = 8 - rankIndex;
+          const square = document.createElement('div');
+          square.className = 'square ' + ((rankIndex + fileIndex) % 2 === 0 ? 'light' : 'dark');
+          square.dataset.square = files[fileIndex] + rank;
+
+          const pieceChar = (initialSetup[rank] && initialSetup[rank][fileIndex]) ? initialSetup[rank][fileIndex] : null;
+          if (pieceChar) {
+            const color = (rank <= 2) ? 'white' : 'black';
+            const wrapper = document.createElement('div');
+            wrapper.innerHTML = makePieceSVG(pieceChar, color);
+            const svgNode = wrapper.firstElementChild;
+            if (svgNode) square.appendChild(svgNode);
+          }
+
+          board.appendChild(square);
+        }
+      }
+
+      // example placeholders
+      document.getElementById('connect').onclick = () => alert('Wallet connected (demo)');
+      document.getElementById('createBtn').onclick = () => alert('Create game (demo)');
+      document.getElementById('joinBtn').onclick = () => {
+        const id = document.getElementById('joinInput').value.trim();
+        alert(id ? 'Joining: ' + id : 'Please enter a Game ID');
+      };
+    });
   </script>
 </body>
 </html>
