@@ -141,7 +141,7 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      font-size: 36px;
+      font-size: 40px;
       cursor: pointer;
     }
 
@@ -150,6 +150,7 @@
 
     .piece {
       user-select: none;
+      filter: drop-shadow(1px 1px 2px #000);
     }
 
     @media (max-width: 600px) {
@@ -160,6 +161,7 @@
       .square {
         width: 40px;
         height: 40px;
+        font-size: 26px;
       }
     }
   </style>
@@ -192,19 +194,39 @@
     window.addEventListener('DOMContentLoaded', () => {
       const board = document.getElementById("board");
       const files = ["a","b","c","d","e","f","g","h"];
+      const initialSetup = {
+        8: ["♜","♞","♝","♛","♚","♝","♞","♜"],
+        7: ["♟","♟","♟","♟","♟","♟","♟","♟"],
+        2: ["♙","♙","♙","♙","♙","♙","♙","♙"],
+        1: ["♖","♘","♗","♕","♔","♗","♘","♖"]
+      };
+
+      // Create chessboard squares + pieces
       for (let i = 0; i < 8; i++) {
         for (let j = 0; j < 8; j++) {
+          const rank = 8 - i;
           const sq = document.createElement("div");
           sq.className = "square " + ((i + j) % 2 === 0 ? "light" : "dark");
-          sq.dataset.square = files[j] + (8 - i);
+          sq.dataset.square = files[j] + rank;
+
+          const piece = initialSetup[rank]?.[j];
+          if (piece) {
+            const pieceEl = document.createElement("span");
+            pieceEl.className = "piece";
+            pieceEl.textContent = piece;
+            sq.appendChild(pieceEl);
+          }
+
           board.appendChild(sq);
         }
       }
 
+      // Example wallet connect
       document.getElementById("connect").onclick = () => {
         alert("Wallet connected (test simulation)");
       };
 
+      // Example game creation/join
       document.getElementById("createBtn").onclick = () => {
         alert("New SSCWC Chess game created on-chain!");
       };
