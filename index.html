@@ -30,21 +30,21 @@
       width: 100%;
       height: 200px;
       position: relative;
-      background: radial-gradient(circle at center, #000 30%, #111 100%);
+      background: radial-gradient(circle at center, #000 40%, #111 100%);
       overflow: hidden;
     }
     #shimmer {
       position: absolute;
       width: 200%;
       height: 100%;
-      background: radial-gradient(circle at center, rgba(255,215,0,0.3), transparent 60%);
+      background: radial-gradient(circle at center, rgba(255,215,0,0.25), transparent 70%);
       animation: shimmer 6s ease-in-out infinite alternate;
       filter: blur(80px);
       z-index: 1;
     }
     @keyframes shimmer {
-      0% { opacity: 0.4; transform: translateX(-15%); }
-      100% { opacity: 0.9; transform: translateX(15%); }
+      0% { opacity: 0.3; transform: translateX(-10%); }
+      100% { opacity: 0.8; transform: translateX(10%); }
     }
     #threeContainer {
       position: relative;
@@ -121,90 +121,4 @@
 
   <div id="chessContainer"></div>
 
-  <script src="https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.min.js"></script>
-  <script>
-    const container = document.getElementById("threeContainer");
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(50, container.clientWidth / container.clientHeight, 0.1, 100);
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setSize(container.clientWidth, container.clientHeight);
-    renderer.setClearColor(0x000000, 1);
-    container.appendChild(renderer.domElement);
-
-    // Lighting - strong golden light to show metallic reflections
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-    const pointLight = new THREE.PointLight(0xffd700, 2, 30);
-    pointLight.position.set(0, 3, 5);
-    scene.add(ambientLight, pointLight);
-
-    camera.position.set(0, 0, 7);
-
-    // Materials for glow gold and silver
-    const goldMat = new THREE.MeshPhysicalMaterial({
-      color: 0xffd700,
-      metalness: 1,
-      roughness: 0.05,
-      emissive: 0x331a00,
-      emissiveIntensity: 0.8,
-      reflectivity: 1,
-      clearcoat: 1
-    });
-    const silverMat = new THREE.MeshPhysicalMaterial({
-      color: 0xe0e0e0,
-      metalness: 1,
-      roughness: 0.15,
-      reflectivity: 1
-    });
-
-    // Left Coin (Upright)
-    const leftCoin = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.7, 0.12, 64), goldMat);
-    const dollar = new THREE.Mesh(new THREE.TorusGeometry(0.3, 0.05, 16, 32), silverMat);
-    dollar.rotation.x = Math.PI / 2;
-    leftCoin.add(dollar);
-    leftCoin.position.set(-2.5, 0, 0);
-    scene.add(leftCoin);
-
-    // Center King (Upright)
-    const base = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.65, 0.2, 32), goldMat);
-    const body = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.35, 0.8, 32), silverMat);
-    const crown = new THREE.Mesh(new THREE.ConeGeometry(0.25, 0.4, 32), goldMat);
-    crown.position.y = 0.7;
-    const kingGroup = new THREE.Group();
-    base.position.y = -0.3;
-    body.position.y = 0.2;
-    kingGroup.add(base, body, crown);
-    kingGroup.position.set(0, 0, 0);
-    kingGroup.scale.set(1.5, 1.5, 1.5);
-    scene.add(kingGroup);
-
-    // Right Coin (Upright)
-    const rightCoin = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.7, 0.12, 64), goldMat);
-    const btcRing = new THREE.Mesh(new THREE.TorusKnotGeometry(0.3, 0.09, 64, 8), silverMat);
-    btcRing.rotation.x = Math.PI / 2;
-    rightCoin.add(btcRing);
-    rightCoin.position.set(2.5, 0, 0);
-    scene.add(rightCoin);
-
-    // Ensure upright rotation
-    leftCoin.rotation.x = 0;
-    rightCoin.rotation.x = 0;
-    kingGroup.rotation.x = 0;
-
-    // Animation
-    function animate() {
-      requestAnimationFrame(animate);
-      leftCoin.rotation.y += 0.03;
-      rightCoin.rotation.y += 0.03;
-      kingGroup.rotation.y += 0.03;
-      renderer.render(scene, camera);
-    }
-    animate();
-
-    window.addEventListener("resize", () => {
-      camera.aspect = container.clientWidth / container.clientHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(container.clientWidth, container.clientHeight);
-    });
-  </script>
-</body>
-</html>
+  <s
