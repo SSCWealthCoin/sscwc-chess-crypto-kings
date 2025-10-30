@@ -5,10 +5,65 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>SSCWC Chess Crypto Kings</title>
   <link rel="stylesheet" href="style.css" />
-</head>
-<body style="background:#1e1e1e;color:#fff;font-family:Arial,Helvetica,sans-serif;text-align:center;">
+  <style>
+    body {
+      background: #1e1e1e;
+      color: #fff;
+      font-family: Arial, Helvetica, sans-serif;
+      text-align: center;
+      margin: 0;
+    }
+    h1 { margin-top: 20px; }
 
-  <!-- LOGIN MODAL -->
+    a.uniswap-btn, button {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin: 6px;
+      font-weight: bold;
+    }
+    a.uniswap-btn {
+      background-color: #ff4fd8;
+      color: white;
+      text-decoration: none;
+      display: inline-block;
+    }
+    button#connect { background: #0099ff; color: white; }
+    button#createBtn { background: #29a745; color: white; }
+    button#joinBtn { background: #ffc107; color: black; }
+
+    #controls {
+      margin: 12px auto;
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    #joinInput {
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #555;
+      background: #111;
+      color: #fff;
+    }
+
+    #status { margin-bottom: 6px; font-weight: bold; color: #ff4d4d; }
+    #roomInfo { margin-bottom: 8px; color: #ddd; }
+
+    #chessContainer {
+      width: 100%;
+      height: 75vh;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- LOGIN MODAL (age verification) -->
   <div id="loginModal" style="
     display:none;
     position:fixed;inset:0;
@@ -37,39 +92,99 @@
   </div>
 
   <!-- HEADER -->
- <h1>SSCWC Chess Crypto Kings</h1>
+  <h1>SSCWC Chess Crypto Kings</h1>
 
-<!-- 🔗 Get SSCWC on Uniswap button -->
-<a href="https://app.uniswap.org/explore/tokens/bnb/0xd7deadbf768dec8ac13850e4f6787ac53a9d0447?utm_medium=mobile&utm_source=share-tdp" 
-   target="_blank" 
-   rel="noopener noreferrer" 
-   class="uniswap-btn">
-  💎 Get SSCWC on Uniswap
-</a>
+  <!-- 🔗 Uniswap + Wallet Buttons -->
+  <a href="https://app.uniswap.org/explore/tokens/bnb/0xd7deadbf768dec8ac13850e4f6787ac53a9d0447?utm_medium=mobile&utm_source=share-tdp" 
+     target="_blank" rel="noopener noreferrer" class="uniswap-btn">
+    💎 Get SSCWC on Uniswap
+  </a>
 
-<!-- Connect Wallet button -->
-<button id="connect">Connect Wallet (BSC Testnet)</button>
-
+  <button id="connect">Connect Wallet (BSC Testnet)</button>
 
   <!-- CONTROLS -->
-  <div id="controls" style="margin:12px auto;display:flex;gap:12px;justify-content:center;align-items:center;flex-wrap:wrap;">
-    <button id="connect" style="background:#0099ff;color:#fff;border:none;padding:10px 18px;border-radius:8px;cursor:pointer;">Connect Wallet (BSC Testnet)</button>
-
-    <button id="createBtn" style="padding:10px 14px;border-radius:8px;border:none;background:#29a745;color:#fff;cursor:pointer;">Create Game</button>
-
+  <div id="controls">
+    <button id="createBtn">Create Game</button>
     <div style="display:flex;gap:6px;align-items:center;">
-      <input id="joinInput" placeholder="Paste Game ID" style="padding:8px;border-radius:6px;border:1px solid #555;background:#111;color:#fff;" />
-      <button id="joinBtn" style="padding:8px 12px;border-radius:6px;border:none;background:#ffc107;cursor:pointer;">Join</button>
+      <input id="joinInput" placeholder="Paste Game ID" />
+      <button id="joinBtn">Join</button>
     </div>
   </div>
 
-  <div id="status" style="margin-bottom:6px;font-weight:bold;color:#ff4d4d;"></div>
-  <div id="roomInfo" style="margin-bottom:8px;color:#ddd;"></div>
+  <div id="status"></div>
+  <div id="roomInfo"></div>
 
-  <!-- BOARD -->
-  <canvas id="board" width="400" height="400" style="display:block;margin:20px auto;border:2px solid #555;background:#222;"></canvas>
+  <!-- 3D Chess Container -->
+  <div id="chessContainer"></div>
 
-  <!-- load module -->
+  <!-- Three.js -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.min.js"></script>
+
+  <!-- Inline 3D Chessboard Script -->
+  <script>
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(50, window.innerWidth / (window.innerHeight * 0.75), 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight * 0.75);
+    document.getElementById("chessContainer").appendChild(renderer.domElement);
+
+    // Chess board
+    const boardSize = 8, tileSize = 1;
+    const board = new THREE.Group();
+    for (let x = 0; x < boardSize; x++) {
+      for (let z = 0; z < boardSize; z++) {
+        const color = (x + z) % 2 === 0 ? 0xeeeeee : 0x663300;
+        const tile = new THREE.Mesh(
+          new THREE.BoxGeometry(tileSize, 0.1, tileSize),
+          new THREE.MeshPhongMaterial({ color })
+        );
+        tile.position.set(x - 3.5, 0, z - 3.5);
+        board.add(tile);
+      }
+    }
+    scene.add(board);
+
+    // Simple piece placeholders
+    const whiteMat = new THREE.MeshPhongMaterial({ color: 0xffffff });
+    const blackMat = new THREE.MeshPhongMaterial({ color: 0x111111 });
+    const pieceGeo = new THREE.CylinderGeometry(0.3, 0.3, 0.8, 32);
+
+    for (let i = 0; i < 8; i++) {
+      const wp = new THREE.Mesh(pieceGeo, whiteMat);
+      wp.position.set(i - 3.5, 0.5, -2.5);
+      scene.add(wp);
+
+      const bp = new THREE.Mesh(pieceGeo, blackMat);
+      bp.position.set(i - 3.5, 0.5, 2.5);
+      scene.add(bp);
+    }
+
+    // Lighting
+    const ambient = new THREE.AmbientLight(0xffffff, 0.6);
+    scene.add(ambient);
+    const point = new THREE.PointLight(0xffffff, 0.9);
+    point.position.set(5, 10, 5);
+    scene.add(point);
+
+    camera.position.set(4, 6, 8);
+    camera.lookAt(0, 0, 0);
+
+    function animate() {
+      requestAnimationFrame(animate);
+      board.rotation.y += 0.002;
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    window.addEventListener("resize", () => {
+      camera.aspect = window.innerWidth / (window.innerHeight * 0.75);
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight * 0.75);
+    });
+  </script>
+
+  <!-- Your existing script -->
   <script type="module" src="script.js"></script>
+
 </body>
 </html>
