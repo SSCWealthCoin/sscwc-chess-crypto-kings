@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -45,6 +44,7 @@
       color: #fff8dc;
       box-shadow: 0 0 20px gold;
       animation: spin 10s linear infinite;
+      transform-style: preserve-3d;
     }
     @keyframes spin {
       0% { transform: rotateY(0deg); }
@@ -91,12 +91,24 @@
     #chessContainer {
       width: 100%;
       height: 75vh;
+      min-height: 360px;
       margin-top: 20px;
       border: 2px solid gold;
       box-shadow: 0 0 25px gold;
+      max-width: 1200px;
+      margin-left: auto;
+      margin-right: auto;
+      background: linear-gradient(180deg, rgba(0,0,0,0.4), rgba(0,0,0,0.8));
+      position: relative;
+    }
+
+    @media (max-width:720px){
+      #coin { width:80px; height:80px; font-size:40px; }
+      h1 { font-size:1.4rem; }
+      #chessContainer { height: 64vh; min-height: 320px; }
+      #joinInput { width: 140px; }
     }
   </style>
-
 </head>
 
 <body>
@@ -105,9 +117,11 @@
   <h1>SSCWC Chess Crypto Kings</h1>
   <h2 class="slogan">The Future of Gold on Blockchain</h2>
 
-<a href="https://app.uniswap.org/explore/tokens/bnb/0xd7deadbf768dec8ac13850e4f6787ac53a9d0447" 
-  target="_blank" rel="noopener noreferrer" class="uniswap-btn">
-💎 Get SSCWC on Uniswap </a> <button id="connect">Connect Wallet (BSC Testnet)</button>
+  <a href="https://app.uniswap.org/explore/tokens/bnb/0xd7deadbf768dec8ac13850e4f6787ac53a9d0447" 
+     target="_blank" rel="noopener noreferrer" class="uniswap-btn">
+    💎 Get SSCWC on Uniswap
+  </a>
+  <button id="connect">Connect Wallet (BSC Testnet)</button>
 
   <div id="controls">
     <button id="createBtn">Create Game</button>
@@ -117,97 +131,234 @@
     </div>
   </div>
 
-  <div id="chessContainer"></div>
+  <div id="chessContainer" aria-label="3D chess board container"></div>
 
   <!-- 3D Libraries -->
-
   <script src="https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.min.js"></script>
-
   <script src="https://cdn.jsdelivr.net/npm/chess.js@1.0.0-beta.6/dist/chess.min.js"></script>
 
   <script>
-    // === Setup Scene ===
+    // Robust renderer/container sizing so mobile displays the board
     const container = document.getElementById("chessContainer");
+
+    // create scene + camera
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(container.clientWidth, container.clientHeight);
-    renderer.setClearColor(0x000000);
-    container.appendChild(renderer.domElement);
-
-    // === Lights ===
-    const ambient = new THREE.AmbientLight(0xffffff, 0.8);
-    const directional = new THREE.DirectionalLight(0xffffff, 1);
-    directional.position.set(5, 10, 5);
-    scene.add(ambient, directional);
-
-    // === Camera Position ===
+    scene.background = new THREE.Color(0x0f0f0f);
+    const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000);
     camera.position.set(5, 7, 8);
     camera.lookAt(0, 0, 0);
 
-    // === Chessboard (Gold Rim + Black Marble) ===
+    // renderer: don't set size from window, set from container
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.outputEncoding = THREE.sRGBEncoding;
+    renderer.domElement.style.width = "100%";
+    renderer.domElement.style.height = "100%";
+    renderer.domElement.style.display = "block";
+    container.appendChild(renderer.domElement);
+
+    // set DPR and initial size via function below
+    function resizeRenderer() {
+      const DPR = Math.min(window.devicePixelRatio || 1, 2); // cap for performance
+      const width = Math.max(1, Math.floor(container.clientWidth * DPR));
+      const height = Math.max(1, Math.floor(container.clientHeight * DPR));
+      if (renderer.domElement.width !== width || renderer.domElement.height !== height) {
+        renderer.setPixelRatio(DPR);
+        renderer.setSize(container.clientWidth, container.clientHeight, false);
+        camera.aspect = container.clientWidth / container.clientHeight;
+        camera.updateProjectionMatrix();
+      }
+    }
+
+    // call immediately and again after small delays (fixes delayed mobile layout)
+    resizeRenderer();
+    setTimeout(resizeRenderer, 300);
+    setTimeout(resizeRenderer, 800);
+
+    // ResizeObserver for robust reacting to container size changes
+    if ('ResizeObserver' in window) {
+      const obs = new ResizeObserver(() => resizeRenderer());
+      obs.observe(container);
+    } else {
+      window.addEventListener('resize', resizeRenderer);
+    }
+
+    // Lights
+    const ambient = new THREE.AmbientLight(0xffffff, 0.9);
+    const dir = new THREE.DirectionalLight(0xffffff, 1.0);
+    dir.position.set(10, 20, 10);
+    scene.add(ambient, dir);
+    const hemi = new THREE.HemisphereLight(0x222222, 0x000000, 0.15);
+    scene.add(hemi);
+
+    // Board group
     const boardGroup = new THREE.Group();
+    scene.add(boardGroup);
+
+    const boardSize = 8;
     const tileSize = 1;
-    const lightColor = 0xdddddd;
-    const darkColor = 0x111111;
+    const tileHalf = (boardSize / 2) - 0.5;
 
-    const boardMaterialLight = new THREE.MeshStandardMaterial({ color: lightColor, metalness: 0.6, roughness: 0.2 });
-    const boardMaterialDark = new THREE.MeshStandardMaterial({ color: darkColor, metalness: 0.8, roughness: 0.4 });
+    // tile materials (black marble-ish and deep black)
+    const marbleMat = new THREE.MeshStandardMaterial({ color: 0x0e0e0e, metalness: 0.05, roughness: 0.6 });
+    const glossyBlackMat = new THREE.MeshStandardMaterial({ color: 0x060606, metalness: 0.1, roughness: 0.25 });
 
-    for (let x = 0; x < 8; x++) {
-      for (let z = 0; z < 8; z++) {
-        const material = (x + z) % 2 === 0 ? boardMaterialLight : boardMaterialDark;
-        const tile = new THREE.Mesh(new THREE.BoxGeometry(tileSize, 0.05, tileSize), material);
-        tile.position.set(x - 3.5, 0, z - 3.5);
+    for (let x = 0; x < boardSize; x++) {
+      for (let z = 0; z < boardSize; z++) {
+        const isLight = (x + z) % 2 === 0;
+        const tile = new THREE.Mesh(new THREE.BoxGeometry(tileSize, 0.06, tileSize), isLight ? marbleMat : glossyBlackMat);
+        tile.position.set(x - tileHalf, 0, z - tileHalf);
         boardGroup.add(tile);
       }
     }
 
-    const rim = new THREE.Mesh(
-      new THREE.BoxGeometry(9, 0.2, 9),
-      new THREE.MeshStandardMaterial({ color: 0xffd700, emissive: 0xffd700, metalness: 1, roughness: 0.2 })
-    );
-    rim.position.y = -0.08;
+    // gold rim
+    const goldMat = new THREE.MeshStandardMaterial({ color: 0xD4AF37, metalness: 1.0, roughness: 0.18, emissive: 0x2b1f06, emissiveIntensity: 0.02 });
+    const rim = new THREE.Mesh(new THREE.BoxGeometry(boardSize + 0.3, 0.12, boardSize + 0.3), goldMat);
+    rim.position.y = -0.06;
     boardGroup.add(rim);
-    scene.add(boardGroup);
 
-    // === Chess Pieces ===
-    const game = new Chess();
-    const pieces = {};
-    const pieceGeo = new THREE.CylinderGeometry(0.3, 0.3, 0.8, 32);
-    const goldMat = new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 1, roughness: 0.2 });
-    const silverMat = new THREE.MeshStandardMaterial({ color: 0xc0c0c0, metalness: 1, roughness: 0.3 });
+    // subtle glow by adding a faint scaled rim with low opacity material (visual only)
+    const glowMat = new THREE.MeshBasicMaterial({ color: 0xffd966, transparent: true, opacity: 0.06, side: THREE.DoubleSide });
+    const glow = new THREE.Mesh(new THREE.PlaneGeometry(boardSize + 2, boardSize + 2), glowMat);
+    glow.rotation.x = -Math.PI/2;
+    glow.position.y = -0.07;
+    scene.add(glow);
 
-    function addPiece(type, color, file, rank) {
-      const mesh = new THREE.Mesh(pieceGeo, color === "w" ? goldMat : silverMat);
-      mesh.position.set(file - 3.5, 0.5, rank - 3.5);
-      scene.add(mesh);
-      pieces[String.fromCharCode(97 + file) + (8 - rank)] = mesh;
+    // small base plane for contrast
+    const base = new THREE.Mesh(new THREE.PlaneGeometry(40, 40), new THREE.MeshStandardMaterial({ color: 0x030303, roughness: 1 }));
+    base.rotation.x = -Math.PI/2;
+    base.position.y = -0.15;
+    scene.add(base);
+
+    // Pieces: metallic gold (white) and silver (black)
+    const goldPieceMat = new THREE.MeshPhysicalMaterial({ color: 0xD4AF37, metalness: 1.0, roughness: 0.18, clearcoat: 0.4 });
+    const silverPieceMat = new THREE.MeshPhysicalMaterial({ color: 0xC0C0C0, metalness: 1.0, roughness: 0.16, clearcoat: 0.18 });
+
+    function createPiece(type, color) {
+      const mat = color === 'w' ? goldPieceMat : silverPieceMat;
+      const group = new THREE.Group();
+
+      if (type === 'p') {
+        const body = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 0.68, 32), mat);
+        const cap = new THREE.Mesh(new THREE.SphereGeometry(0.16, 24, 12), mat);
+        cap.position.y = 0.44;
+        group.add(body, cap);
+      } else if (type === 'r') {
+        const body = new THREE.Mesh(new THREE.BoxGeometry(0.56, 0.9, 0.56), mat);
+        const top = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.16, 0.46), mat);
+        top.position.y = 0.53;
+        group.add(body, top);
+      } else if (type === 'n') {
+        const base = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 0.6, 32), mat);
+        const head = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.62, 0.22), mat);
+        head.position.set(0, 0.38, 0.12);
+        head.rotation.y = 0.08;
+        group.add(base, head);
+      } else if (type === 'b') {
+        const cone = new THREE.Mesh(new THREE.ConeGeometry(0.33, 0.98, 32), mat);
+        const cut = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.8, 0.8), mat);
+        cut.position.y = 0.15;
+        cut.rotation.y = 0.35;
+        group.add(cone, cut);
+      } else if (type === 'q') {
+        const base = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.32, 0.6, 32), mat);
+        const orb = new THREE.Mesh(new THREE.SphereGeometry(0.22, 24, 12), mat);
+        orb.position.y = 0.5;
+        group.add(base, orb);
+      } else if (type === 'k') {
+        const base = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.34, 0.7, 32), mat);
+        const crown = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.2, 0.36), mat);
+        crown.position.y = 0.52;
+        const cross = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.26, 0.06), mat);
+        cross.position.y = 0.78;
+        group.add(base, crown, cross);
+      }
+
+      return group;
     }
 
-    // Setup initial board
-    const boardState = game.board();
-    for (let rank = 0; rank < 8; rank++) {
-      for (let file = 0; file < 8; file++) {
-        const piece = boardState[rank][file];
-        if (piece) addPiece(piece.type, piece.color, file, rank);
+    const chess = new Chess();
+    const placed = {}; // square -> mesh group
+
+    // place starting pieces (chess.board() returns 8 arrays: rank 8 to 1)
+    const boardState = chess.board();
+    for (let r = 0; r < 8; r++) {
+      for (let f = 0; f < 8; f++) {
+        const p = boardState[r][f];
+        if (!p) continue;
+        const square = String.fromCharCode(97 + f) + (8 - r);
+        const mesh = createPiece(p.type, p.color);
+        mesh.position.set(f - tileHalf, 0.5, r - tileHalf);
+        if (p.color === 'b') mesh.rotation.y = Math.PI;
+        scene.add(mesh);
+        placed[square] = mesh;
       }
     }
 
-    // === Render Loop ===
+    // simple pointer highlight (visual feedback)
+    const raycaster = new THREE.Raycaster();
+    const pointer = new THREE.Vector2();
+    let highlighted = null;
+
+    function handlePointerDown(e) {
+      const rect = renderer.domElement.getBoundingClientRect();
+      pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+      raycaster.setFromCamera(pointer, camera);
+      const allPieces = Object.values(placed).flatMap(g => g.children.length ? g.children : [g]);
+      const hits = raycaster.intersectObjects(allPieces, true);
+      if (hits.length) {
+        const top = hits[0].object;
+        // find parent group
+        let root = top;
+        while (root && !Object.values(placed).includes(root)) {
+          root = root.parent;
+          if (!root) break;
+        }
+        if (!root) {
+          for (const [sq, grp] of Object.entries(placed)) {
+            if (grp === top || grp.children.includes(top)) { root = grp; break; }
+          }
+        }
+        if (highlighted && highlighted !== root) {
+          // clear previous
+          highlighted.traverse(n => { if (n.material && n.material.emissive) n.material.emissive.setHex(0x000000); });
+        }
+        highlighted = root;
+        highlighted.traverse(n => { if (n.material) { if (!n.material.emissive) n.material.emissive = new THREE.Color(0x000000); n.material.emissive.set(0x222222); }});
+      } else {
+        if (highlighted) {
+          highlighted.traverse(n => { if (n.material && n.material.emissive) n.material.emissive.setHex(0x000000); });
+          highlighted = null;
+        }
+      }
+    }
+
+    renderer.domElement.addEventListener('pointerdown', handlePointerDown);
+
+    // final render loop
+    function render() {
+      renderer.render(scene, camera);
+    }
+
     function animate() {
       requestAnimationFrame(animate);
-      renderer.render(scene, camera);
+      render();
     }
     animate();
 
-    // === Handle Resizing ===
-    window.addEventListener("resize", () => {
-      camera.aspect = container.clientWidth / container.clientHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(container.clientWidth, container.clientHeight);
-    });
-  </script>
+    // ensure it's sized correctly on load
+    setTimeout(resizeRenderer, 200);
+    setTimeout(resizeRenderer, 700);
+    setTimeout(resizeRenderer, 1200);
 
+    // safety fallback if webgl not available
+    if (!renderer.getContext) {
+      container.innerHTML = '<div style="padding:18px;color:#fff">WebGL not available on this device/browser.</div>';
+    }
+
+    // expose for debugging
+    window._sscwc = { scene, camera, renderer, chess, placed };
+  </script>
 </body>
 </html>
