@@ -121,4 +121,62 @@
 
   <div id="chessContainer"></div>
 
-  <s
+  <!-- Three.js Script Section -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
+  <script>
+    const container = document.getElementById('threeContainer');
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    renderer.setClearColor(0x000000, 0);
+    container.appendChild(renderer.domElement);
+
+    // Gold shimmering material
+    const goldMaterial = new THREE.MeshStandardMaterial({
+      color: 0xffd700,
+      metalness: 1,
+      roughness: 0.2,
+      emissive: 0x331a00,
+      emissiveIntensity: 0.6
+    });
+
+    // Simple upright chess pieces (cones as placeholders)
+    const geometry = new THREE.ConeGeometry(0.5, 1.5, 32);
+    const pieces = [];
+    for (let i = -2; i <= 2; i += 2) {
+      const mesh = new THREE.Mesh(geometry, goldMaterial);
+      mesh.position.set(i, 0, 0);
+      scene.add(mesh);
+      pieces.push(mesh);
+    }
+
+    // Lighting: warm gold tone
+    const pointLight = new THREE.PointLight(0xffe066, 1.2);
+    pointLight.position.set(0, 5, 5);
+    scene.add(pointLight);
+
+    const ambient = new THREE.AmbientLight(0xffcc66, 0.3);
+    scene.add(ambient);
+
+    camera.position.z = 6;
+
+    // Upright smooth rotation
+    function animate() {
+      requestAnimationFrame(animate);
+      pieces.forEach((p, i) => {
+        p.rotation.y += 0.01 + i * 0.002;
+      });
+      renderer.render(scene, camera);
+    }
+
+    animate();
+
+    window.addEventListener('resize', () => {
+      camera.aspect = container.clientWidth / container.clientHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(container.clientWidth, container.clientHeight);
+    });
+  </script>
+</body>
+</html>
