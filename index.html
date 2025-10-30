@@ -11,6 +11,7 @@
       font-family: Arial, Helvetica, sans-serif;
       text-align: center;
       margin: 0;
+      overflow-x: hidden;
     }
     h1 { margin-top: 20px; }
 
@@ -52,7 +53,10 @@
     #chessContainer {
       width: 100%;
       height: 70vh;
+      min-height: 350px;
+      background: #2c2c2c;
       margin-top: 20px;
+      border-top: 2px solid #444;
     }
   </style>
 </head>
@@ -76,7 +80,6 @@
 
   <div id="chessContainer"></div>
 
-  <!-- Libraries -->
   <script src="https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chess.js@1.0.0-beta.6/dist/chess.min.js"></script>
 
@@ -86,18 +89,18 @@
     const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setClearColor(0x202020);
+    renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(container.clientWidth, container.clientHeight);
     container.appendChild(renderer.domElement);
 
-    // Lighting
+    // Lights
     const ambient = new THREE.AmbientLight(0xffffff, 0.8);
-    scene.add(ambient);
-    const directional = new THREE.DirectionalLight(0xffffff, 0.6);
-    directional.position.set(5, 10, 5);
-    scene.add(directional);
+    const dir = new THREE.DirectionalLight(0xffffff, 0.7);
+    dir.position.set(5, 10, 5);
+    scene.add(ambient, dir);
 
-    // Camera
-    camera.position.set(5, 7, 8);
+    // Camera position
+    camera.position.set(5, 8, 8);
     camera.lookAt(0, 0, 0);
 
     // Chessboard
@@ -118,65 +121,57 @@
     }
     scene.add(board);
 
-    // Chess.js setup
+    // Basic 3D pieces
     const game = new Chess();
-
     const whiteMat = new THREE.MeshPhongMaterial({ color: 0xffffff });
     const blackMat = new THREE.MeshPhongMaterial({ color: 0x111111 });
-    const pieces = {};
 
-    function makePieceMesh(type, color) {
-      let mesh;
-      const material = color === 'w' ? whiteMat : blackMat;
-      if (type === 'p') {
-        mesh = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.8, 32), material);
-      } else if (type === 'r') {
-        mesh = new THREE.Mesh(new THREE.BoxGeometry(0.6, 1, 0.6), material);
-      } else if (type === 'n') {
-        mesh = new THREE.Mesh(new THREE.ConeGeometry(0.4, 1, 32), material);
-      } else if (type === 'b') {
-        mesh = new THREE.Mesh(new THREE.ConeGeometry(0.35, 1.1, 32), material);
-      } else if (type === 'q') {
-        mesh = new THREE.Mesh(new THREE.SphereGeometry(0.5, 32, 32), material);
-      } else if (type === 'k') {
-        mesh = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 1.2, 32), material);
-      }
-      return mesh;
+    function makePiece(type, color) {
+      const mat = color === 'w' ? whiteMat : blackMat;
+      if (type === 'p') return new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.8, 32), mat);
+      if (type === 'r') return new THREE.Mesh(new THREE.BoxGeometry(0.6, 1, 0.6), mat);
+      if (type === 'n') return new THREE.Mesh(new THREE.ConeGeometry(0.4, 1, 32), mat);
+      if (type === 'b') return new THREE.Mesh(new THREE.ConeGeometry(0.35, 1.1, 32), mat);
+      if (type === 'q') return new THREE.Mesh(new THREE.SphereGeometry(0.5, 32, 32), mat);
+      if (type === 'k') return new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 1.2, 32), mat);
     }
 
-    function addPiece(type, color, file, rank) {
-      const mesh = makePieceMesh(type, color);
-      mesh.position.set(file - 3.5, 0.5, rank - 3.5);
-      scene.add(mesh);
-      const square = String.fromCharCode(97 + file) + (8 - rank);
-      pieces[square] = mesh;
-    }
-
-    function setupPieces() {
-      const boardState = game.board();
-      for (let rank = 0; rank < 8; rank++) {
-        for (let file = 0; file < 8; file++) {
-          const piece = boardState[rank][file];
-          if (piece) addPiece(piece.type, piece.color, file, rank);
+    const boardState = game.board();
+    for (let rank = 0; rank < 8; rank++) {
+      for (let file = 0; file < 8; file++) {
+        const piece = boardState[rank][file];
+        if (piece) {
+          const mesh = makePiece(piece.type, piece.color);
+          mesh.position.set(file - 3.5, 0.5, rank - 3.5);
+          scene.add(mesh);
         }
       }
     }
 
-    setupPieces();
-
     // Render Loop
+    function render() {
+      renderer.render(scene, camera);
+    }
+
     function animate() {
       requestAnimationFrame(animate);
-      renderer.render(scene, camera);
+      render();
     }
     animate();
 
-    // Resize
-    window.addEventListener("resize", () => {
-      camera.aspect = container.clientWidth / container.clientHeight;
+    // Resize handler (also re-renders)
+    function onResize() {
+      const width = container.clientWidth;
+      const height = container.clientHeight;
+      camera.aspect = width / height;
       camera.updateProjectionMatrix();
-      renderer.setSize(container.clientWidth, container.clientHeight);
-    });
+      renderer.setSize(width, height);
+      render();
+    }
+    window.addEventListener("resize", onResize);
+
+    // Force a re-render after short delay (fixes mobile initial load)
+    setTimeout(onResize, 500);
   </script>
 </body>
 </html>
