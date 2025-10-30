@@ -26,6 +26,8 @@
       margin-top: -5px;
       margin-bottom: 10px;
     }
+
+    /* Top banner area (coin sits here) */
     #top3D {
       width: 100%;
       height: 200px;
@@ -33,25 +35,33 @@
       background: radial-gradient(circle at center, #000 40%, #111 100%);
       overflow: hidden;
     }
+
+    /* soft pulsing gold shimmer behind the coin (only behind coin) */
     #shimmer {
       position: absolute;
-      width: 200%;
+      left: 0;
+      top: 0;
+      width: 100%;
       height: 100%;
-      background: radial-gradient(circle at center, rgba(255,215,0,0.25), transparent 70%);
-      animation: shimmer 6s ease-in-out infinite alternate;
-      filter: blur(80px);
+      pointer-events: none;
+      background: radial-gradient(circle at 50% 40%, rgba(255,215,0,0.28), transparent 30%);
+      filter: blur(40px);
       z-index: 1;
+      animation: shimmer 6s ease-in-out infinite alternate;
     }
     @keyframes shimmer {
-      0% { opacity: 0.3; transform: translateX(-10%); }
-      100% { opacity: 0.8; transform: translateX(10%); }
+      0% { transform: scale(1) translateY(-4px); opacity: 0.6; }
+      100% { transform: scale(1.02) translateY(4px); opacity: 0.95; }
     }
+
     #threeContainer {
       position: relative;
       width: 100%;
       height: 100%;
       z-index: 2;
     }
+
+    /* Buttons / controls - preserved from original */
     a.uniswap-btn, button {
       padding: 10px 16px;
       border: none;
@@ -70,7 +80,8 @@
     button#connect { background: #0099ff; color: white; }
     button#createBtn { background: #29a745; color: white; }
     button#joinBtn { background: #ffc107; color: black; }
-    a.uniswap-btn:hover, button:hover { transform: scale(1.05); box-shadow: 0 0 10px gold; }
+    a.uniswap-btn:hover, button:hover { transform: scale(1.03); box-shadow: 0 0 12px gold; }
+
     #controls {
       margin: 12px auto;
       display: flex;
@@ -79,6 +90,7 @@
       align-items: center;
       flex-wrap: wrap;
     }
+
     #joinInput {
       padding: 8px;
       border-radius: 6px;
@@ -86,6 +98,8 @@
       background: #111;
       color: #fff;
     }
+
+    /* Chessboard container (unchanged) */
     #chessContainer {
       width: 100%;
       height: 75vh;
@@ -93,6 +107,9 @@
       border: 2px solid gold;
       box-shadow: 0 0 25px gold;
     }
+
+    /* small helper so three.js canvas sits exactly where we want */
+    #threeContainer canvas { display: block; width: 100%; height: 100%; }
   </style>
 </head>
 <body>
@@ -106,9 +123,7 @@
   <h2 class="slogan">The Future of Gold on Blockchain</h2>
 
   <a href="https://app.uniswap.org/explore/tokens/bnb/0xd7deadbf768dec8ac13850e4f6787ac53a9d0447"
-     target="_blank" rel="noopener noreferrer" class="uniswap-btn">
-     💎 Get SSCWC on Uniswap
-  </a>
+     target="_blank" rel="noopener noreferrer" class="uniswap-btn">💎 Get SSCWC on Uniswap</a>
   <button id="connect">Connect Wallet (BSC Testnet)</button>
 
   <div id="controls">
@@ -121,62 +136,238 @@
 
   <div id="chessContainer"></div>
 
-  <!-- Three.js Script Section -->
-  <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
+  <!-- Three.js -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.min.js"></script>
+
   <script>
+  (function(){
+    // --- setup --- 
     const container = document.getElementById('threeContainer');
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+
+    // camera sized to container aspect
+    const camera = new THREE.PerspectiveCamera(50, container.clientWidth / container.clientHeight, 0.1, 1000);
+    camera.position.set(0, 0.5, 4.5);   // slightly above coin center so king sits nicely
+    camera.lookAt(0, 0.3, 0);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setPixelRatio(window.devicePixelRatio ? window.devicePixelRatio : 1);
     renderer.setSize(container.clientWidth, container.clientHeight);
-    renderer.setClearColor(0x000000, 0);
     container.appendChild(renderer.domElement);
 
-    // Gold shimmering material
-    const goldMaterial = new THREE.MeshStandardMaterial({
-      color: 0xffd700,
-      metalness: 1,
-      roughness: 0.2,
-      emissive: 0x331a00,
-      emissiveIntensity: 0.6
+    // --- lighting ---
+    const hemi = new THREE.HemisphereLight(0xffffff, 0x444444, 0.6);
+    scene.add(hemi);
+
+    // warm key light above
+    const key = new THREE.PointLight(0xffea9b, 2.2, 40, 2);
+    key.position.set(0, 5, 6);
+    scene.add(key);
+
+    // rim/backlight to separate silhouette
+    const rim = new THREE.PointLight(0xffd36b, 0.9, 40, 2);
+    rim.position.set(0, -3, -6);
+    scene.add(rim);
+
+    // --- materials ---
+    const goldMat = new THREE.MeshPhysicalMaterial({
+      color: 0xffd32a,
+      metalness: 1.0,
+      roughness: 0.12,
+      clearcoat: 0.8,
+      clearcoatRoughness: 0.1,
+      emissive: 0x221000,
+      emissiveIntensity: 0.25
     });
 
-    // Simple upright chess pieces (cones as placeholders)
-    const geometry = new THREE.ConeGeometry(0.5, 1.5, 32);
-    const pieces = [];
-    for (let i = -2; i <= 2; i += 2) {
-      const mesh = new THREE.Mesh(geometry, goldMaterial);
-      mesh.position.set(i, 0, 0);
-      scene.add(mesh);
-      pieces.push(mesh);
+    const coinEdgeMat = new THREE.MeshStandardMaterial({
+      color: 0xd99e00,
+      metalness: 1,
+      roughness: 0.08
+    });
+
+    const silverMat = new THREE.MeshPhysicalMaterial({
+      color: 0xdfe7ea,
+      metalness: 1,
+      roughness: 0.18
+    });
+
+    // --- draw a coin face on a canvas to use as a texture (Bitcoin symbol) ---
+    function makeCoinFaceTexture(size = 1024) {
+      const c = document.createElement('canvas');
+      c.width = c.height = size;
+      const ctx = c.getContext('2d');
+
+      // background circle (gold gradient)
+      const g = ctx.createRadialGradient(size*0.35, size*0.3, size*0.1, size*0.5, size*0.6, size*0.6);
+      g.addColorStop(0, '#ffd64d');
+      g.addColorStop(1, '#c88600');
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(size/2, size/2, size*0.44, 0, Math.PI*2);
+      ctx.fill();
+
+      // inner rim (darker)
+      ctx.fillStyle = 'rgba(0,0,0,0.06)';
+      ctx.beginPath();
+      ctx.arc(size/2, size/2, size*0.36, 0, Math.PI*2);
+      ctx.fill();
+
+      // bright outer rim stroke
+      ctx.lineWidth = Math.max(6, size*0.02);
+      ctx.strokeStyle = '#ffd85a';
+      ctx.beginPath();
+      ctx.arc(size/2, size/2, size*0.44, 0, Math.PI*2);
+      ctx.stroke();
+
+      // Draw a Bitcoin-like '₿' glyph centered.
+      // Fallback: if the browser font doesn't have ₿, draw a stylised B with two small vertical strokes.
+      ctx.fillStyle = '#ffffff';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      // try the real ₿ - choose a large font that most platforms support
+      const fontSize = Math.floor(size*0.34);
+      ctx.font = `bold ${fontSize}px Arial, Helvetica, sans-serif`;
+      // measure - fallback if glyph missing (width small)
+      const measure = ctx.measureText('₿');
+      if (measure.width < fontSize*0.35) {
+        // fallback draw stylized B + double stroke:
+        ctx.fillStyle = '#ffffff';
+        ctx.font = `bold ${Math.floor(size*0.32)}px Arial`;
+        ctx.fillText('B', size/2, size/2 - size*0.02);
+
+        // add vertical strokes (two lines) to emulate ₿
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = Math.max(6, size*0.02);
+        const x = size/2 + size*0.12;
+        ctx.beginPath();
+        ctx.moveTo(x, size*0.22);
+        ctx.lineTo(x, size*0.78);
+        ctx.stroke();
+        const x2 = size/2 - size*0.12;
+        ctx.beginPath();
+        ctx.moveTo(x2, size*0.22);
+        ctx.lineTo(x2, size*0.78);
+        ctx.stroke();
+      } else {
+        // draw the unicode character
+        ctx.fillStyle = '#fff';
+        ctx.fillText('₿', size/2, size/2);
+      }
+
+      // small highlight circle to make it look embossed
+      ctx.globalCompositeOperation = 'soft-light';
+      const hg = ctx.createRadialGradient(size*0.5, size*0.35, size*0.02, size*0.5, size*0.35, size*0.6);
+      hg.addColorStop(0, 'rgba(255,255,255,0.25)');
+      hg.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = hg;
+      ctx.beginPath();
+      ctx.arc(size/2, size/2 - size*0.12, size*0.3, 0, Math.PI*2);
+      ctx.fill();
+
+      // return texture
+      const tex = new THREE.CanvasTexture(c);
+      tex.needsUpdate = true;
+      tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+      return tex;
     }
 
-    // Lighting: warm gold tone
-    const pointLight = new THREE.PointLight(0xffe066, 1.2);
-    pointLight.position.set(0, 5, 5);
-    scene.add(pointLight);
+    const faceTexture = makeCoinFaceTexture(1024);
 
-    const ambient = new THREE.AmbientLight(0xffcc66, 0.3);
-    scene.add(ambient);
+    // --- build coin: main cylinder + face plane so texture sits perfectly on coin face ---
+    const coinRadius = 1.05;
+    const coinThickness = 0.18;
+    const coinBody = new THREE.Mesh(new THREE.CylinderGeometry(coinRadius, coinRadius, coinThickness, 128, 1), coinEdgeMat);
+    // make top and bottom slightly reflective gold by using same goldMat for caps:
+    // Three's CylinderGeometry uses same material for whole mesh; easiest is to create three meshes:
+    const coinEdge = new THREE.Mesh(new THREE.CylinderGeometry(coinRadius*0.985, coinRadius*0.985, coinThickness, 64), coinEdgeMat);
+    // front face (slightly above to avoid z-fighting)
+    const faceGeometry = new THREE.CircleGeometry(coinRadius*0.94, 64);
+    const faceMaterial = new THREE.MeshStandardMaterial({ map: faceTexture, metalness: 0.9, roughness: 0.12 });
+    const faceMesh = new THREE.Mesh(faceGeometry, faceMaterial);
+    faceMesh.rotation.x = -Math.PI/2;
+    faceMesh.position.z = coinThickness/2 + 0.001; // sits on top
 
-    camera.position.z = 6;
+    // back face (mirror look)
+    const backFace = new THREE.Mesh(faceGeometry, new THREE.MeshStandardMaterial({ color: 0xcc9900, metalness: 1, roughness: 0.14 }));
+    backFace.rotation.x = Math.PI/2;
+    backFace.position.z = -coinThickness/2 - 0.001;
 
-    // Upright smooth rotation
+    // Combine coin pieces
+    const coinGroup = new THREE.Group();
+    coinGroup.add(coinEdge, faceMesh, backFace);
+
+    // Add a subtle golden rim line (thin torus) around coin edge for accent
+    const rimTorus = new THREE.Mesh(new THREE.TorusGeometry(coinRadius*0.95, 0.03, 16, 160), goldMat);
+    rimTorus.rotation.x = Math.PI / 2;
+    rimTorus.position.z = coinThickness/2 + 0.002;
+    coinGroup.add(rimTorus);
+
+    // --- build a simple "sculpted" chess king (stacked shapes) and place on coin ---
+    const king = new THREE.Group();
+    const kingBase = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.28, 0.12, 32), goldMat);
+    const kingMid = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.2, 0.42, 32), silverMat);
+    const kingNeck = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.1, 0.18, 32), goldMat);
+    const kingCrown = new THREE.Mesh(new THREE.TorusGeometry(0.12, 0.03, 16, 64), goldMat);
+    kingCrown.rotation.x = Math.PI / 2;
+    const kingCross = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.12, 0.03), goldMat);
+    kingCross.position.y = 0.7;
+
+    kingBase.position.y = 0;
+    kingMid.position.y = 0.28;
+    kingNeck.position.y = 0.6;
+    kingCrown.position.y = 0.78;
+
+    king.add(kingBase, kingMid, kingNeck, kingCrown, kingCross);
+
+    // position king on top of coin
+    king.position.y = coinThickness/2 + 0.12;
+    king.position.x = 0;
+    king.position.z = 0;
+
+    // add coin and king to a container so they rotate together
+    const topGroup = new THREE.Group();
+    topGroup.add(coinGroup);
+    topGroup.add(king);
+
+    scene.add(topGroup);
+
+    // small ground/soft reflection using a radial gradient plane with very low opacity
+    const groundGeo = new THREE.PlaneGeometry(8, 6, 1, 1);
+    const groundMat = new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.0 });
+    const ground = new THREE.Mesh(groundGeo, groundMat);
+    ground.rotation.x = -Math.PI/2;
+    ground.position.y = -1.2;
+    scene.add(ground);
+
+    // initial scale & position so it looks like your screenshot (coin centered above title)
+    topGroup.scale.set(1.0, 1.0, 1.0);
+    topGroup.position.set(0, -0.15, 0);
+
+    // --- ensure upright moon-like rotation: rotate about local Y axis only ---
+    const rotationSpeed = 0.018; // medium speed (tweak to taste)
+
+    // render loop
     function animate() {
       requestAnimationFrame(animate);
-      pieces.forEach((p, i) => {
-        p.rotation.y += 0.01 + i * 0.002;
-      });
+      // upright spin
+      topGroup.rotation.y += rotationSpeed;
       renderer.render(scene, camera);
     }
-
     animate();
 
+    // handle resize
     window.addEventListener('resize', () => {
-      camera.aspect = container.clientWidth / container.clientHeight;
+      const w = container.clientWidth;
+      const h = container.clientHeight;
+      camera.aspect = w / h;
       camera.updateProjectionMatrix();
-      renderer.setSize(container.clientWidth, container.clientHeight);
+      renderer.setSize(w, h);
     });
+
+    // done
+  })();
   </script>
 </body>
 </html>
