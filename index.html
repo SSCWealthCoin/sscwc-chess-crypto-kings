@@ -1,346 +1,206 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>SSCWC Chess Crypto Kings</title>
   <style>
-    :root{
-      --bg:#080808; --panel:#111; --gold:#D4AF37; --gold2:#ffd966;
+    body {
+      margin: 0;
+      background: radial-gradient(circle at center, #111 40%, #000 100%);
+      color: #fff;
+      font-family: "Poppins", Arial, sans-serif;
+      text-align: center;
+      overflow-x: hidden;
     }
-    html,body{height:100%;margin:0;background:radial-gradient(circle at center, #0b0b0b 30%, #000 100%);color:#fff;font-family:Inter,Arial,sans-serif}
-    .topbar{display:flex;flex-direction:column;align-items:center;gap:8px;padding-top:12px}
-    .tokens-row{display:flex;gap:18px;align-items:center;justify-content:center;margin-bottom:6px}
-    .token-canvas{width:74px;height:74px;border-radius:12px;background:transparent;display:inline-block}
-    .token-wrap{display:flex;align-items:center;justify-content:center}
-    h1{margin:0;color:var(--gold);font-size:24px;letter-spacing:0.6px}
-    h2.slogan{margin:0;font-style:italic;color:var(--gold2);font-weight:500;font-size:14px;margin-bottom:6px}
-    .controls{display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap;padding:8px}
-    a.uniswap-btn, button{padding:10px 14px;border-radius:10px;border:none;cursor:pointer;font-weight:700}
-    a.uniswap-btn{background:linear-gradient(90deg,#ff4fd8,#7b3bff);color:#fff;text-decoration:none}
-    button#connect{background:#0099ff;color:#fff} button#createBtn{background:#29a745;color:#fff} button#joinBtn{background:#ffc107;color:#111}
-    #joinInput{padding:8px;border-radius:8px;border:1px solid #222;background:#0b0b0b;color:#ddd}
-    #chessContainer{width:100%;max-width:1200px;margin:18px auto;height:68vh;min-height:360px;border:2px solid var(--gold);box-shadow:0 0 26px rgba(212,175,55,0.35);background:linear-gradient(180deg, rgba(0,0,0,0.4), rgba(0,0,0,0.8));position:relative}
-    .header-row{display:flex;align-items:center;gap:14px}
-    @media (max-width:720px){ .token-canvas{width:58px;height:58px} h1{font-size:20px} #chessContainer{height:60vh;min-height:300px} }
+
+```
+h1 {
+  font-size: 1.8em;
+  color: gold;
+  letter-spacing: 1px;
+  margin: 10px 0 0;
+}
+h2.slogan {
+  font-style: italic;
+  color: #ffd700;
+  font-weight: 400;
+  margin-top: -5px;
+  margin-bottom: 10px;
+}
+
+/* Top 3D section */
+#top3D {
+  width: 100%;
+  height: 160px;
+  position: relative;
+  background: linear-gradient(90deg, #000, #2b1a00, #000);
+  overflow: hidden;
+}
+
+/* Pulsing gold shimmer behind 3D icons */
+#shimmer {
+  position: absolute;
+  width: 200%;
+  height: 100%;
+  background: radial-gradient(circle at center, rgba(255,215,0,0.4), transparent 60%);
+  animation: shimmer 6s ease-in-out infinite alternate;
+  filter: blur(60px);
+  z-index: 1;
+}
+
+@keyframes shimmer {
+  0% { opacity: 0.3; transform: translateX(-20%); }
+  100% { opacity: 0.8; transform: translateX(20%); }
+}
+
+#threeContainer {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+}
+
+a.uniswap-btn, button {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin: 6px;
+  font-weight: bold;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+a.uniswap-btn {
+  background-color: #ff4fd8;
+  color: white;
+  text-decoration: none;
+  display: inline-block;
+}
+button#connect { background: #0099ff; color: white; }
+button#createBtn { background: #29a745; color: white; }
+button#joinBtn { background: #ffc107; color: black; }
+a.uniswap-btn:hover, button:hover { transform: scale(1.05); box-shadow: 0 0 10px gold; }
+
+#controls {
+  margin: 12px auto;
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+#joinInput {
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #555;
+  background: #111;
+  color: #fff;
+}
+
+#chessContainer {
+  width: 100%;
+  height: 75vh;
+  margin-top: 20px;
+  border: 2px solid gold;
+  box-shadow: 0 0 25px gold;
+}
+```
+
   </style>
 </head>
 <body>
-  <div class="topbar">
-    <div class="tokens-row" aria-hidden="true">
-      <div class="token-wrap"><canvas id="coinDollar" class="token-canvas"></canvas></div>
-      <div class="token-wrap"><canvas id="kingToken" class="token-canvas" style="width:92px;height:92px"></canvas></div>
-      <div class="token-wrap"><canvas id="coinBTC" class="token-canvas"></canvas></div>
-    </div>
 
-    <div class="header-row">
-      <h1>SSCWC Chess Crypto Kings</h1>
-    </div>
-    <h2 class="slogan">The Future of Gold on Blockchain</h2>
+  <div id="top3D">
+    <div id="shimmer"></div>
+    <div id="threeContainer"></div>
+  </div>
 
-    <div class="controls">
-      <a href="https://app.uniswap.org/explore/tokens/bnb/0xd7deadbf768dec8ac13850e4f6787ac53a9d0447" class="uniswap-btn" target="_blank" rel="noopener noreferrer">💎 Get SSCWC on Uniswap</a>
-      <button id="connect">Connect Wallet (BSC Testnet)</button>
-      <div style="display:flex;gap:10px;align-items:center">
-        <button id="createBtn">Create Game</button>
-        <input id="joinInput" placeholder="Paste Game ID" />
-        <button id="joinBtn">Join</button>
-      </div>
+  <h1>SSCWC Chess Crypto Kings</h1>
+  <h2 class="slogan">The Future of Gold on Blockchain</h2>
+
+<a href="https://app.uniswap.org/explore/tokens/bnb/0xd7deadbf768dec8ac13850e4f6787ac53a9d0447"
+ target="_blank" rel="noopener noreferrer" class="uniswap-btn">💎 Get SSCWC on Uniswap</a> <button id="connect">Connect Wallet (BSC Testnet)</button>
+
+  <div id="controls">
+    <button id="createBtn">Create Game</button>
+    <div style="display:flex;gap:6px;align-items:center;">
+      <input id="joinInput" placeholder="Paste Game ID" />
+      <button id="joinBtn">Join</button>
     </div>
   </div>
 
-  <div id="chessContainer" aria-label="3D chess board container"></div>
+  <div id="chessContainer"></div>
 
-  <!-- three.js + chess.js -->
   <script src="https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chess.js@1.0.0-beta.6/dist/chess.min.js"></script>
 
   <script>
-  /* ============================================================
-     Helper: make a small Three renderer in a DOM canvas element
-     used to show the three spinning tokens at the top.
-     ============================================================ */
-  function makeMiniScene(canvas, drawCallback){
-    const renderer = new THREE.WebGLRenderer({canvas:canvas, antialias:true, alpha:true});
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio||1, 2));
-    renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
+    const container = document.getElementById("threeContainer");
     const scene = new THREE.Scene();
-    scene.background = null;
-    const camera = new THREE.PerspectiveCamera(45, canvas.clientWidth/canvas.clientHeight, 0.1, 100);
-    camera.position.set(0,0,3.6);
-    camera.lookAt(0,0,0);
-    const ambient = new THREE.AmbientLight(0xffffff,0.9); scene.add(ambient);
-    const dir = new THREE.DirectionalLight(0xffffff,0.8); dir.position.set(3,6,2); scene.add(dir);
-    // call user-provided draw initializer
-    const root = drawCallback({scene, camera});
-    function render(){
-      renderer.render(scene,camera);
-    }
-    function animate(){
-      requestAnimationFrame(animate);
-      if (root && root.userData && typeof root.userData.tick === 'function') root.userData.tick();
-      render();
-    }
-    // responsive resizing
-    const ro = new ResizeObserver(()=> {
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
-      renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
-      camera.aspect = canvas.clientWidth / canvas.clientHeight;
-      camera.updateProjectionMatrix();
-      render();
-    });
-    ro.observe(canvas);
-    animate();
-    return {scene, camera, renderer, root};
-  }
-
-  /* -------------------------
-     Make Dollar Coin mini scene
-     ------------------------- */
-  const dollarMini = makeMiniScene(document.getElementById('coinDollar'), ({scene})=>{
-    // coin body
-    const coinGeo = new THREE.CylinderGeometry(0.9,0.9,0.12,64);
-    const coinMat = new THREE.MeshStandardMaterial({color:0xD4AF37, metalness:1, roughness:0.2});
-    const coin = new THREE.Mesh(coinGeo, coinMat);
-    coin.rotation.x = Math.PI/2;
-    scene.add(coin);
-
-    // create a canvas texture for "$"
-    const c = document.createElement('canvas'); c.width=256; c.height=256;
-    const ctx = c.getContext('2d'); ctx.fillStyle='#D4AF37'; ctx.fillRect(0,0,256,256);
-    // transparent center, draw symbol in darker tone
-    ctx.fillStyle = '#2b2b2b'; ctx.font='bold 180px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText('$',128,140);
-    const tex = new THREE.CanvasTexture(c);
-    // front plane slightly above the coin
-    const plate = new THREE.Mesh(new THREE.CircleGeometry(0.88,64), new THREE.MeshBasicMaterial({map:tex}));
-    plate.rotation.x = Math.PI/2; plate.position.z = 0.07;
-    scene.add(plate);
-
-    // tiny rim highlight
-    const edge = new THREE.Mesh(new THREE.TorusGeometry(0.92, 0.02, 16, 120), new THREE.MeshStandardMaterial({color:0xffe68a, metalness:1, roughness:0.15}));
-    edge.rotation.x = Math.PI/2; edge.position.z = 0.06; scene.add(edge);
-
-    // spin clockwise medium speed:
-    coin.userData = {tick: ()=> { coin.rotation.z -= 0.012; plate.rotation.z -= 0.012; edge.rotation.z -= 0.012; } };
-    return coin;
-  });
-
-  /* -------------------------
-     Make Bitcoin Coin mini scene
-     ------------------------- */
-  const btcMini = makeMiniScene(document.getElementById('coinBTC'), ({scene})=>{
-    const coinGeo = new THREE.CylinderGeometry(0.9,0.9,0.12,64);
-    const coinMat = new THREE.MeshStandardMaterial({color:0xD4AF37, metalness:1, roughness:0.2});
-    const coin = new THREE.Mesh(coinGeo, coinMat); coin.rotation.x = Math.PI/2; scene.add(coin);
-
-    // draw Bitcoin symbol on canvas texture
-    const c = document.createElement('canvas'); c.width=256; c.height=256;
-    const ctx = c.getContext('2d'); ctx.fillStyle='#D4AF37'; ctx.fillRect(0,0,256,256);
-    ctx.fillStyle = '#2b2b2b'; ctx.font='bold 150px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText('₿',128,140);
-    const tex = new THREE.CanvasTexture(c);
-    const plate = new THREE.Mesh(new THREE.CircleGeometry(0.88,64), new THREE.MeshBasicMaterial({map:tex}));
-    plate.rotation.x = Math.PI/2; plate.position.z = 0.07; scene.add(plate);
-
-    const edge = new THREE.Mesh(new THREE.TorusGeometry(0.92, 0.02, 16, 120), new THREE.MeshStandardMaterial({color:0xffe68a, metalness:1, roughness:0.15}));
-    edge.rotation.x = Math.PI/2; edge.position.z = 0.06; scene.add(edge);
-
-    // spin clockwise at same medium speed
-    coin.userData = {tick: ()=> { coin.rotation.z -= 0.0125; plate.rotation.z -= 0.0125; edge.rotation.z -= 0.0125; } };
-    return coin;
-  });
-
-  /* -------------------------
-     Make 3D King mini scene (center, slightly larger)
-     ------------------------- */
-  const kingMini = makeMiniScene(document.getElementById('kingToken'), ({scene})=>{
-    // build a sculpted king from primitives
-    const goldMat = new THREE.MeshPhysicalMaterial({color:0xD4AF37, metalness:1, roughness:0.18, clearcoat:0.5});
-    const base = new THREE.Mesh(new THREE.CylinderGeometry(0.5,0.5,0.22,64), goldMat); base.position.y = -0.06; scene.add(base);
-    const lower = new THREE.Mesh(new THREE.CylinderGeometry(0.36,0.4,0.6,64), goldMat); lower.position.y = 0.25; scene.add(lower);
-    const mid = new THREE.Mesh(new THREE.CylinderGeometry(0.28,0.28,0.7,64), goldMat); mid.position.y = 0.78; scene.add(mid);
-    const crown = new THREE.Mesh(new THREE.BoxGeometry(0.42,0.16,0.42), goldMat); crown.position.y = 1.18; scene.add(crown);
-    const crossV = new THREE.Mesh(new THREE.BoxGeometry(0.06,0.36,0.06), goldMat); crossV.position.y = 1.36; scene.add(crossV);
-    const crossH = new THREE.Mesh(new THREE.BoxGeometry(0.22,0.06,0.06), goldMat); crossH.position.set(0,1.36,0); scene.add(crossH);
-
-    // a small accent darker ring
-    const ring = new THREE.Mesh(new THREE.TorusGeometry(0.38,0.03,16,120), new THREE.MeshStandardMaterial({color:0x8a6a1a, metalness:0.6, roughness:0.35}));
-    ring.rotation.x = Math.PI/2; ring.position.y = 1.05; scene.add(ring);
-
-    // scale smaller scene so it fits; center origin
-    const root = new THREE.Group();
-    root.add(base, lower, mid, crown, crossV, crossH, ring);
-    scene.add(root);
-
-    // center camera a bit closer for impact
-    // spin counter-clockwise slightly faster (opposite direction)
-    root.userData = {tick: ()=> { root.rotation.y += 0.015; } };
-    return root;
-  });
-
-  /* ============================================================
-                    MAIN CHESSBOARD SCENE
-     ============================================================ */
-  (function mainBoard(){
-    const container = document.getElementById('chessContainer');
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x0b0b0b);
-
-    const renderer = new THREE.WebGLRenderer({antialias:true});
-    renderer.outputEncoding = THREE.sRGBEncoding;
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
-    renderer.domElement.style.width = '100%';
-    renderer.domElement.style.height = '100%';
-    renderer.domElement.style.display = 'block';
+    const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(container.clientWidth, container.clientHeight);
     container.appendChild(renderer.domElement);
 
-    const camera = new THREE.PerspectiveCamera(45, container.clientWidth/container.clientHeight, 0.1, 200);
-    camera.position.set(5,9,10);
-    camera.lookAt(0,0,0);
+    // Lighting
+    const ambient = new THREE.AmbientLight(0xffffff, 0.9);
+    const point = new THREE.PointLight(0xffd700, 1.5, 50);
+    point.position.set(0, 5, 10);
+    scene.add(ambient, point);
 
-    // lights
-    const ambient = new THREE.AmbientLight(0xffffff,0.9); scene.add(ambient);
-    const dir = new THREE.DirectionalLight(0xffffff,1.0); dir.position.set(12,20,10); scene.add(dir);
-    const hemi = new THREE.HemisphereLight(0x222222,0x000000,0.15); scene.add(hemi);
+    camera.position.set(0, 0, 6);
 
-    // board
-    const boardGroup = new THREE.Group();
-    scene.add(boardGroup);
-    const boardSize = 8, tileHalf = (boardSize/2)-0.5;
-    const marbleMat = new THREE.MeshStandardMaterial({color:0x060606, metalness:0.05, roughness:0.35});
-    const glossyMat = new THREE.MeshStandardMaterial({color:0x0f0f0f, metalness:0.08, roughness:0.22});
-    for(let x=0;x<8;x++){
-      for(let z=0;z<8;z++){
-        const isLight = (x+z)%2===0;
-        const tile = new THREE.Mesh(new THREE.BoxGeometry(1,0.06,1), isLight?glossyMat:marbleMat);
-        tile.position.set(x-tileHalf,0,z-tileHalf);
-        boardGroup.add(tile);
-      }
-    }
-    // gold rim around board
-    const goldMat = new THREE.MeshStandardMaterial({color:0xD4AF37, metalness:1, roughness:0.15, emissive:0x2b1f06, emissiveIntensity:0.02});
-    const rim = new THREE.Mesh(new THREE.BoxGeometry(boardSize+0.3,0.12,boardSize+0.3), goldMat);
-    rim.position.y = -0.06; boardGroup.add(rim);
-    // subtle glow plane
-    const glow = new THREE.Mesh(new THREE.CircleGeometry(boardSize+1,64), new THREE.MeshBasicMaterial({color:0xffde99, transparent:true, opacity:0.04, side:THREE.DoubleSide}));
-    glow.rotation.x = -Math.PI/2; glow.position.y = -0.07; scene.add(glow);
+    // Materials
+    const goldMat = new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 1, roughness: 0.2 });
+    const silverMat = new THREE.MeshStandardMaterial({ color: 0xc0c0c0, metalness: 1, roughness: 0.25 });
 
-    // base
-    const base = new THREE.Mesh(new THREE.PlaneGeometry(40,40), new THREE.MeshStandardMaterial({color:0x020202, roughness:1}));
-    base.rotation.x = -Math.PI/2; base.position.y = -0.18; scene.add(base);
+    // === $ Coin ===
+    const coinGeo = new THREE.CylinderGeometry(0.6, 0.6, 0.1, 64);
+    const coin = new THREE.Mesh(coinGeo, goldMat);
+    const dollar = new THREE.Mesh(new THREE.TextGeometry('$', { font: new THREE.FontLoader().parse({}), size: 0.5, height: 0.05 }), silverMat);
+    dollar.position.set(-0.18, -0.25, 0.05);
+    coin.add(dollar);
+    coin.position.x = -2.5;
+    scene.add(coin);
 
-    // sculpted realistic-looking pieces (constructed from primitives)
-    const goldMatPiece = new THREE.MeshPhysicalMaterial({color:0xD4AF37, metalness:1, roughness:0.15, clearcoat:0.5});
-    const silverMatPiece = new THREE.MeshPhysicalMaterial({color:0xC0C0C0, metalness:1, roughness:0.16, clearcoat:0.3});
-    function createSculpted(type, color){
-      const mat = color==='w'?goldMatPiece:silverMatPiece;
-      const g = new THREE.Group();
-      if(type==='p'){
-        const body = new THREE.Mesh(new THREE.CylinderGeometry(0.28,0.28,0.7,32), mat);
-        const cap = new THREE.Mesh(new THREE.SphereGeometry(0.16,24,12), mat); cap.position.y=0.44; g.add(body,cap);
-      } else if(type==='r'){
-        const body = new THREE.Mesh(new THREE.CylinderGeometry(0.28,0.32,0.72,32), mat);
-        const top = new THREE.Mesh(new THREE.BoxGeometry(0.5,0.2,0.5), mat); top.position.y=0.5; g.add(body,top);
-      } else if(type==='n'){
-        const base = new THREE.Mesh(new THREE.CylinderGeometry(0.28,0.28,0.6,32), mat);
-        const head = new THREE.Mesh(new THREE.BoxGeometry(0.36,0.6,0.2), mat); head.position.set(0,0.36,0.12);
-        head.rotation.y = 0.08; g.add(base,head);
-      } else if(type==='b'){
-        const cone = new THREE.Mesh(new THREE.ConeGeometry(0.34,0.94,32), mat);
-        const notch = new THREE.Mesh(new THREE.BoxGeometry(0.12,0.8,0.8), mat); notch.position.y=0.12; notch.rotation.y=0.35;
-        g.add(cone,notch);
-      } else if(type==='q'){
-        const base = new THREE.Mesh(new THREE.CylinderGeometry(0.32,0.32,0.6,32), mat);
-        const orb = new THREE.Mesh(new THREE.SphereGeometry(0.22,24,12), mat); orb.position.y=0.5; g.add(base,orb);
-      } else if(type==='k'){
-        const base = new THREE.Mesh(new THREE.CylinderGeometry(0.34,0.34,0.7,32), mat);
-        const crown = new THREE.Mesh(new THREE.BoxGeometry(0.36,0.18,0.36), mat); crown.position.y=0.52;
-        const cross = new THREE.Mesh(new THREE.BoxGeometry(0.06,0.26,0.06), mat); cross.position.y=0.78;
-        g.add(base,crown,cross);
-      }
-      return g;
-    }
+    // === Chess King (sculpted-like shape) ===
+    const kingGroup = new THREE.Group();
+    const base = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.6, 0.2, 32), goldMat);
+    const body = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.35, 0.8, 32), silverMat);
+    const crown = new THREE.Mesh(new THREE.TorusGeometry(0.25, 0.05, 16, 100), goldMat);
+    crown.rotation.x = Math.PI / 2;
+    crown.position.y = 0.45;
+    const cross = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.2, 0.05), goldMat);
+    cross.position.y = 0.65;
+    kingGroup.add(base, body, crown, cross);
+    kingGroup.position.x = 0;
+    scene.add(kingGroup);
 
-    // initialize chess.js starting position
-    const chess = new Chess();
-    const placed = {};
-    const state = chess.board(); // ranks 0..7 are 8..1
+    // === Bitcoin Coin ===
+    const btcCoin = new THREE.Mesh(coinGeo, goldMat);
+    const btc = new THREE.Mesh(new THREE.TextGeometry('₿', { font: new THREE.FontLoader().parse({}), size: 0.45, height: 0.05 }), silverMat);
+    btc.position.set(-0.2, -0.25, 0.05);
+    btcCoin.add(btc);
+    btcCoin.position.x = 2.5;
+    scene.add(btcCoin);
 
-    for(let r=0;r<8;r++){
-      for(let f=0;f<8;f++){
-        const p = state[r][f];
-        if(!p) continue;
-        const sq = String.fromCharCode(97+f)+(8-r);
-        const mesh = createSculpted(p.type, p.color);
-        mesh.position.set(f-tileHalf, 0.5, r-tileHalf);
-        if(p.color==='b') mesh.rotation.y = Math.PI;
-        scene.add(mesh);
-        placed[sq] = mesh;
-      }
-    }
-
-    // pointer highlight feedback (not moving pieces yet)
-    const raycaster = new THREE.Raycaster(); const pointer = new THREE.Vector2(); let highlighted=null;
-    function downHandler(e){
-      const rect = renderer.domElement.getBoundingClientRect();
-      pointer.x = ((e.clientX-rect.left)/rect.width)*2 -1;
-      pointer.y = -((e.clientY-rect.top)/rect.height)*2 +1;
-      raycaster.setFromCamera(pointer,camera);
-      // flatten placed groups to children for intersect
-      const objs = Object.values(placed).flatMap(g => g.children.length ? g.children : [g]);
-      const hits = raycaster.intersectObjects(objs, true);
-      if(hits.length){
-        const top = hits[0].object;
-        // find root group
-        let root = top;
-        while(root && !Object.values(placed).includes(root)){
-          root = root.parent;
-          if(!root) break;
-        }
-        if(!root){
-          for(const [k,v] of Object.entries(placed)){
-            if(v===top || v.children.includes(top)){ root=v; break; }
-          }
-        }
-        if(highlighted && highlighted!==root){
-          highlighted.traverse(n => { if(n.material && n.material.emissive) n.material.emissive.setHex(0x000000); });
-        }
-        highlighted = root;
-        highlighted.traverse(n => { if(n.material){ if(!n.material.emissive) n.material.emissive=new THREE.Color(0x000000); n.material.emissive.set(0x222222); }});
-      } else {
-        if(highlighted){ highlighted.traverse(n => { if(n.material && n.material.emissive) n.material.emissive.setHex(0x000000); }); highlighted=null; }
-      }
-    }
-    renderer.domElement.addEventListener('pointerdown', downHandler);
-
-    // responsive sizing via ResizeObserver
-    function resize(){
-      const DPR = Math.min(window.devicePixelRatio||1,2);
-      const w = Math.max(1, Math.floor(container.clientWidth * DPR));
-      const h = Math.max(1, Math.floor(container.clientHeight * DPR));
-      renderer.setPixelRatio(DPR);
-      renderer.setSize(container.clientWidth, container.clientHeight, false);
-      camera.aspect = container.clientWidth / container.clientHeight;
-      camera.updateProjectionMatrix();
-    }
-    resize();
-    if('ResizeObserver' in window){
-      const ro = new ResizeObserver(resize); ro.observe(container);
-    } else window.addEventListener('resize', resize);
-    // extra kicks for mobile layout oddities:
-    setTimeout(resize,250); setTimeout(resize,800);
-
-    // animate loop
-    function animate(){
+    // === Rotation ===
+    function animate() {
       requestAnimationFrame(animate);
-      renderer.render(scene,camera);
+      coin.rotation.y += 0.02;
+      kingGroup.rotation.y += 0.02;
+      btcCoin.rotation.y += 0.02;
+      renderer.render(scene, camera);
     }
     animate();
 
-    // expose for debug if needed
-    window._sscwc_board = { scene, camera, renderer, chess, placed };
-  })();
+    window.addEventListener("resize", () => {
+      camera.aspect = container.clientWidth / container.clientHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(container.clientWidth, container.clientHeight);
+    });
   </script>
+
 </body>
 </html>
