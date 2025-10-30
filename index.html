@@ -14,100 +14,86 @@
       text-align: center;
       overflow-x: hidden;
     }
-
-```
-h1 {
-  font-size: 1.8em;
-  color: gold;
-  letter-spacing: 1px;
-  margin: 10px 0 0;
-}
-h2.slogan {
-  font-style: italic;
-  color: #ffd700;
-  font-weight: 400;
-  margin-top: -5px;
-  margin-bottom: 10px;
-}
-
-/* Top 3D section */
-#top3D {
-  width: 100%;
-  height: 160px;
-  position: relative;
-  background: linear-gradient(90deg, #000, #2b1a00, #000);
-  overflow: hidden;
-}
-
-/* Pulsing shimmer behind 3D icons */
-#shimmer {
-  position: absolute;
-  width: 200%;
-  height: 100%;
-  background: radial-gradient(circle at center, rgba(255,215,0,0.4), transparent 60%);
-  animation: shimmer 6s ease-in-out infinite alternate;
-  filter: blur(60px);
-  z-index: 1;
-}
-
-@keyframes shimmer {
-  0% { opacity: 0.3; transform: translateX(-20%); }
-  100% { opacity: 0.8; transform: translateX(20%); }
-}
-
-#threeContainer {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  z-index: 2;
-}
-
-a.uniswap-btn, button {
-  padding: 10px 16px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  margin: 6px;
-  font-weight: bold;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-a.uniswap-btn {
-  background-color: #ff4fd8;
-  color: white;
-  text-decoration: none;
-  display: inline-block;
-}
-button#connect { background: #0099ff; color: white; }
-button#createBtn { background: #29a745; color: white; }
-button#joinBtn { background: #ffc107; color: black; }
-a.uniswap-btn:hover, button:hover { transform: scale(1.05); box-shadow: 0 0 10px gold; }
-
-#controls {
-  margin: 12px auto;
-  display: flex;
-  gap: 12px;
-  justify-content: center;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-#joinInput {
-  padding: 8px;
-  border-radius: 6px;
-  border: 1px solid #555;
-  background: #111;
-  color: #fff;
-}
-
-#chessContainer {
-  width: 100%;
-  height: 75vh;
-  margin-top: 20px;
-  border: 2px solid gold;
-  box-shadow: 0 0 25px gold;
-}
-```
-
+    h1 {
+      font-size: 1.8em;
+      color: gold;
+      letter-spacing: 1px;
+      margin: 10px 0 0;
+    }
+    h2.slogan {
+      font-style: italic;
+      color: #ffd700;
+      font-weight: 400;
+      margin-top: -5px;
+      margin-bottom: 10px;
+    }
+    #top3D {
+      width: 100%;
+      height: 180px;
+      position: relative;
+      background: linear-gradient(90deg, #000, #2b1a00, #000);
+      overflow: hidden;
+    }
+    #shimmer {
+      position: absolute;
+      width: 200%;
+      height: 100%;
+      background: radial-gradient(circle at center, rgba(255,215,0,0.4), transparent 60%);
+      animation: shimmer 6s ease-in-out infinite alternate;
+      filter: blur(60px);
+      z-index: 1;
+    }
+    @keyframes shimmer {
+      0% { opacity: 0.3; transform: translateX(-20%); }
+      100% { opacity: 0.8; transform: translateX(20%); }
+    }
+    #threeContainer {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      z-index: 2;
+    }
+    a.uniswap-btn, button {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin: 6px;
+      font-weight: bold;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    a.uniswap-btn {
+      background-color: #ff4fd8;
+      color: white;
+      text-decoration: none;
+      display: inline-block;
+    }
+    button#connect { background: #0099ff; color: white; }
+    button#createBtn { background: #29a745; color: white; }
+    button#joinBtn { background: #ffc107; color: black; }
+    a.uniswap-btn:hover, button:hover { transform: scale(1.05); box-shadow: 0 0 10px gold; }
+    #controls {
+      margin: 12px auto;
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    #joinInput {
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #555;
+      background: #111;
+      color: #fff;
+    }
+    #chessContainer {
+      width: 100%;
+      height: 75vh;
+      margin-top: 20px;
+      border: 2px solid gold;
+      box-shadow: 0 0 25px gold;
+    }
   </style>
 </head>
 <body>
@@ -121,7 +107,7 @@ a.uniswap-btn:hover, button:hover { transform: scale(1.05); box-shadow: 0 0 10px
   <h2 class="slogan">The Future of Gold on Blockchain</h2>
 
 <a href="https://app.uniswap.org/explore/tokens/bnb/0xd7deadbf768dec8ac13850e4f6787ac53a9d0447"
- target="_blank" rel="noopener noreferrer" class="uniswap-btn">💎 Get SSCWC on Uniswap</a> <button id="connect">Connect Wallet (BSC Testnet)</button>
+target="_blank" rel="noopener noreferrer" class="uniswap-btn">💎 Get SSCWC on Uniswap</a> <button id="connect">Connect Wallet (BSC Testnet)</button>
 
   <div id="controls">
     <button id="createBtn">Create Game</button>
@@ -147,31 +133,27 @@ a.uniswap-btn:hover, button:hover { transform: scale(1.05); box-shadow: 0 0 10px
     renderer.setSize(container.clientWidth, container.clientHeight);
     container.appendChild(renderer.domElement);
 
-    // Lights
-    const ambient = new THREE.AmbientLight(0xffffff, 0.9);
-    const point = new THREE.PointLight(0xffd700, 1.2, 50);
-    point.position.set(0, 5, 10);
+    const ambient = new THREE.AmbientLight(0xffffff, 1.1);
+    const point = new THREE.PointLight(0xffd700, 2.2, 100);
+    point.position.set(0, 5, 8);
     scene.add(ambient, point);
 
-    camera.position.set(0, 0, 5);
+    camera.position.set(0, 0, 6);
 
-    // Materials
-    const goldMat = new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 1, roughness: 0.2 });
-    const silverMat = new THREE.MeshStandardMaterial({ color: 0xc0c0c0, metalness: 1, roughness: 0.25 });
+    const goldMat = new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 1, roughness: 0.15, emissive: 0x332200, emissiveIntensity: 0.2 });
+    const silverMat = new THREE.MeshStandardMaterial({ color: 0xdddddd, metalness: 1, roughness: 0.2, emissive: 0x222222, emissiveIntensity: 0.3 });
 
-    // Placeholder groups
     const coinGroup = new THREE.Group();
     const kingGroup = new THREE.Group();
     const btcGroup = new THREE.Group();
-
     scene.add(coinGroup, kingGroup, btcGroup);
 
     const loader = new THREE.FontLoader();
-    loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function (font) {
-      // $ Coin
+    loader.load("https://threejs.org/examples/fonts/helvetiker_regular.typeface.json", function (font) {
+      // Dollar Coin
       const coinGeo = new THREE.CylinderGeometry(0.6, 0.6, 0.1, 64);
       const coin = new THREE.Mesh(coinGeo, goldMat);
-      const dollarGeo = new THREE.TextGeometry('$', { font, size: 0.45, height: 0.05 });
+      const dollarGeo = new THREE.TextGeometry("$", { font, size: 0.45, height: 0.05 });
       const dollar = new THREE.Mesh(dollarGeo, silverMat);
       dollar.position.set(-0.18, -0.25, 0.05);
       coin.add(dollar);
@@ -180,21 +162,23 @@ a.uniswap-btn:hover, button:hover { transform: scale(1.05); box-shadow: 0 0 10px
       // Bitcoin Coin
       const btcCoinGeo = new THREE.CylinderGeometry(0.6, 0.6, 0.1, 64);
       const btcCoin = new THREE.Mesh(btcCoinGeo, goldMat);
-      const btcGeo = new THREE.TextGeometry('₿', { font, size: 0.45, height: 0.05 });
+      const btcGeo = new THREE.TextGeometry("₿", { font, size: 0.45, height: 0.05 });
       const btc = new THREE.Mesh(btcGeo, silverMat);
       btc.position.set(-0.22, -0.25, 0.05);
       btcCoin.add(btc);
       btcGroup.add(btcCoin);
+
+      startAnimation();
     });
 
-    // Sculpted Chess King
+    // Chess King
     const base = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.6, 0.2, 32), goldMat);
     const body = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.35, 0.8, 32), silverMat);
     const crown = new THREE.Mesh(new THREE.ConeGeometry(0.25, 0.4, 32), goldMat);
     crown.position.y = 0.7;
     kingGroup.add(base, body, crown);
 
-    // Positions
+    // Positioning
     coinGroup.position.x = -2.3;
     kingGroup.position.x = 0;
     btcGroup.position.x = 2.3;
@@ -202,15 +186,22 @@ a.uniswap-btn:hover, button:hover { transform: scale(1.05); box-shadow: 0 0 10px
     body.position.y = 0.2;
     kingGroup.scale.set(1.2, 1.2, 1.2);
 
-    // Rotation
-    function animate() {
-      requestAnimationFrame(animate);
-      coinGroup.rotation.y += 0.015;
-      kingGroup.rotation.y += 0.015;
-      btcGroup.rotation.y += 0.015;
-      renderer.render(scene, camera);
+    function startAnimation() {
+      function animate() {
+        requestAnimationFrame(animate);
+        coinGroup.rotation.y += 0.015;
+        kingGroup.rotation.y += 0.015;
+        btcGroup.rotation.y += 0.015;
+        renderer.render(scene, camera);
+      }
+      animate();
     }
-    animate();
+
+    window.addEventListener("resize", () => {
+      camera.aspect = container.clientWidth / container.clientHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(container.clientWidth, container.clientHeight);
+    });
   </script>
 
 </body>
