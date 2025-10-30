@@ -6,7 +6,7 @@
   <title>SSCWC Chess Crypto Kings</title>
   <style>
     body {
-      background: #1e1e1e;
+      background: #111;
       color: #fff;
       font-family: Arial, Helvetica, sans-serif;
       text-align: center;
@@ -54,9 +54,12 @@
       width: 100%;
       height: 70vh;
       min-height: 350px;
-      background: #2c2c2c;
+      background: #1a1a1a;
       margin-top: 20px;
-      border-top: 2px solid #444;
+      border-top: 2px solid #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
   </style>
 </head>
@@ -88,19 +91,19 @@
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setClearColor(0x202020);
+    renderer.setClearColor(0x1a1a1a);
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(container.clientWidth, container.clientHeight);
     container.appendChild(renderer.domElement);
 
-    // Lights
-    const ambient = new THREE.AmbientLight(0xffffff, 0.8);
-    const dir = new THREE.DirectionalLight(0xffffff, 0.7);
-    dir.position.set(5, 10, 5);
+    // Stronger lighting for visibility
+    const ambient = new THREE.AmbientLight(0xffffff, 1.0);
+    const dir = new THREE.DirectionalLight(0xffffff, 1.0);
+    dir.position.set(10, 20, 10);
     scene.add(ambient, dir);
 
-    // Camera position
-    camera.position.set(5, 8, 8);
+    // Camera angle (closer to board)
+    camera.position.set(5, 7, 10);
     camera.lookAt(0, 0, 0);
 
     // Chessboard
@@ -121,19 +124,30 @@
     }
     scene.add(board);
 
-    // Basic 3D pieces
+    // Add simple reflective base
+    const floor = new THREE.Mesh(
+      new THREE.PlaneGeometry(20, 20),
+      new THREE.MeshPhongMaterial({ color: 0x0a0a0a, shininess: 100 })
+    );
+    floor.rotation.x = -Math.PI / 2;
+    floor.position.y = -0.03;
+    scene.add(floor);
+
+    // Chess pieces (simple geometry)
     const game = new Chess();
-    const whiteMat = new THREE.MeshPhongMaterial({ color: 0xffffff });
-    const blackMat = new THREE.MeshPhongMaterial({ color: 0x111111 });
+    const whiteMat = new THREE.MeshPhongMaterial({ color: 0xffffff, shininess: 100 });
+    const blackMat = new THREE.MeshPhongMaterial({ color: 0x111111, shininess: 100 });
 
     function makePiece(type, color) {
       const mat = color === 'w' ? whiteMat : blackMat;
-      if (type === 'p') return new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.8, 32), mat);
-      if (type === 'r') return new THREE.Mesh(new THREE.BoxGeometry(0.6, 1, 0.6), mat);
-      if (type === 'n') return new THREE.Mesh(new THREE.ConeGeometry(0.4, 1, 32), mat);
-      if (type === 'b') return new THREE.Mesh(new THREE.ConeGeometry(0.35, 1.1, 32), mat);
-      if (type === 'q') return new THREE.Mesh(new THREE.SphereGeometry(0.5, 32, 32), mat);
-      if (type === 'k') return new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 1.2, 32), mat);
+      switch (type) {
+        case 'p': return new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.8, 32), mat);
+        case 'r': return new THREE.Mesh(new THREE.BoxGeometry(0.6, 1, 0.6), mat);
+        case 'n': return new THREE.Mesh(new THREE.ConeGeometry(0.4, 1, 32), mat);
+        case 'b': return new THREE.Mesh(new THREE.ConeGeometry(0.35, 1.1, 32), mat);
+        case 'q': return new THREE.Mesh(new THREE.SphereGeometry(0.5, 32, 32), mat);
+        case 'k': return new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 1.2, 32), mat);
+      }
     }
 
     const boardState = game.board();
@@ -148,18 +162,17 @@
       }
     }
 
-    // Render Loop
+    // Render
     function render() {
       renderer.render(scene, camera);
     }
-
     function animate() {
       requestAnimationFrame(animate);
       render();
     }
     animate();
 
-    // Resize handler (also re-renders)
+    // Resize
     function onResize() {
       const width = container.clientWidth;
       const height = container.clientHeight;
@@ -170,8 +183,8 @@
     }
     window.addEventListener("resize", onResize);
 
-    // Force a re-render after short delay (fixes mobile initial load)
-    setTimeout(onResize, 500);
+    // Force re-render (mobile fix)
+    setTimeout(onResize, 600);
   </script>
 </body>
 </html>
