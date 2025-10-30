@@ -9,7 +9,7 @@
       margin: 0;
       background: #000;
       color: #fff;
-      font-family: "Poppins", Arial, sans-serif;
+      font-family: "Poppins", "Segoe UI Symbol", "Noto Emoji", Arial, sans-serif;
       text-align: center;
       overflow-x: hidden;
     }
@@ -40,7 +40,6 @@
       overflow: hidden;
     }
 
-    /* Flat embossed gold coin */
     .coin {
       position: relative;
       width: 120px;
@@ -143,6 +142,7 @@
       align-items: center;
       font-size: 40px;
       cursor: pointer;
+      font-family: "Segoe UI Symbol", "Noto Emoji", Arial, sans-serif;
     }
 
     .light { background: #f0d9b5; }
@@ -191,7 +191,7 @@
   </div>
 
   <script>
-    window.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', () => {
       const board = document.getElementById("board");
       const files = ["a","b","c","d","e","f","g","h"];
       const initialSetup = {
@@ -201,40 +201,29 @@
         1: ["♖","♘","♗","♕","♔","♗","♘","♖"]
       };
 
-      // Create chessboard squares + pieces
       for (let i = 0; i < 8; i++) {
         for (let j = 0; j < 8; j++) {
           const rank = 8 - i;
-          const sq = document.createElement("div");
-          sq.className = "square " + ((i + j) % 2 === 0 ? "light" : "dark");
-          sq.dataset.square = files[j] + rank;
+          const square = document.createElement("div");
+          square.className = "square " + ((i + j) % 2 === 0 ? "light" : "dark");
+          square.dataset.square = files[j] + rank;
 
-          const piece = initialSetup[rank]?.[j];
-          if (piece) {
-            const pieceEl = document.createElement("span");
-            pieceEl.className = "piece";
-            pieceEl.textContent = piece;
-            sq.appendChild(pieceEl);
+          if (initialSetup[rank] && initialSetup[rank][j]) {
+            const piece = document.createElement("span");
+            piece.className = "piece";
+            piece.textContent = initialSetup[rank][j];
+            square.appendChild(piece);
           }
 
-          board.appendChild(sq);
+          board.appendChild(square);
         }
       }
 
-      // Example wallet connect
-      document.getElementById("connect").onclick = () => {
-        alert("Wallet connected (test simulation)");
-      };
-
-      // Example game creation/join
-      document.getElementById("createBtn").onclick = () => {
-        alert("New SSCWC Chess game created on-chain!");
-      };
-
+      document.getElementById("connect").onclick = () => alert("Wallet connected (test simulation)");
+      document.getElementById("createBtn").onclick = () => alert("New SSCWC Chess game created!");
       document.getElementById("joinBtn").onclick = () => {
         const id = document.getElementById("joinInput").value.trim();
-        if (id) alert("Joining game: " + id);
-        else alert("Please enter a valid Game ID.");
+        alert(id ? "Joining game: " + id : "Please enter a valid Game ID.");
       };
     });
   </script>
