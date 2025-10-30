@@ -121,10 +121,6 @@ target="_blank" rel="noopener noreferrer" class="uniswap-btn">💎 Get SSCWC on 
 
   <script src="https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.min.js"></script>
 
-  <script src="https://cdn.jsdelivr.net/npm/three@0.157.0/examples/js/geometries/TextGeometry.js"></script>
-
-  <script src="https://cdn.jsdelivr.net/npm/three@0.157.0/examples/js/loaders/FontLoader.js"></script>
-
   <script>
     const container = document.getElementById("threeContainer");
     const scene = new THREE.Scene();
@@ -133,69 +129,53 @@ target="_blank" rel="noopener noreferrer" class="uniswap-btn">💎 Get SSCWC on 
     renderer.setSize(container.clientWidth, container.clientHeight);
     container.appendChild(renderer.domElement);
 
-    const ambient = new THREE.AmbientLight(0xffffff, 1.1);
-    const point = new THREE.PointLight(0xffd700, 2.2, 100);
+    const ambient = new THREE.AmbientLight(0xffffff, 1.2);
+    const point = new THREE.PointLight(0xffd700, 2.5, 100);
     point.position.set(0, 5, 8);
     scene.add(ambient, point);
 
-    camera.position.set(0, 0, 6);
+    camera.position.set(0, 0, 7);
 
-    const goldMat = new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 1, roughness: 0.15, emissive: 0x332200, emissiveIntensity: 0.2 });
-    const silverMat = new THREE.MeshStandardMaterial({ color: 0xdddddd, metalness: 1, roughness: 0.2, emissive: 0x222222, emissiveIntensity: 0.3 });
+    const goldMat = new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 1, roughness: 0.15 });
+    const silverMat = new THREE.MeshStandardMaterial({ color: 0xdddddd, metalness: 1, roughness: 0.2 });
 
-    const coinGroup = new THREE.Group();
-    const kingGroup = new THREE.Group();
-    const btcGroup = new THREE.Group();
-    scene.add(coinGroup, kingGroup, btcGroup);
+    // Left Gold Coin
+    const leftCoin = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 0.1, 64), goldMat);
+    const dollar = new THREE.Mesh(new THREE.TorusGeometry(0.3, 0.05, 16, 32), silverMat);
+    dollar.rotation.x = Math.PI / 2;
+    leftCoin.add(dollar);
+    leftCoin.position.x = -2.5;
+    scene.add(leftCoin);
 
-    const loader = new THREE.FontLoader();
-    loader.load("https://threejs.org/examples/fonts/helvetiker_regular.typeface.json", function (font) {
-      // Dollar Coin
-      const coinGeo = new THREE.CylinderGeometry(0.6, 0.6, 0.1, 64);
-      const coin = new THREE.Mesh(coinGeo, goldMat);
-      const dollarGeo = new THREE.TextGeometry("$", { font, size: 0.45, height: 0.05 });
-      const dollar = new THREE.Mesh(dollarGeo, silverMat);
-      dollar.position.set(-0.18, -0.25, 0.05);
-      coin.add(dollar);
-      coinGroup.add(coin);
-
-      // Bitcoin Coin
-      const btcCoinGeo = new THREE.CylinderGeometry(0.6, 0.6, 0.1, 64);
-      const btcCoin = new THREE.Mesh(btcCoinGeo, goldMat);
-      const btcGeo = new THREE.TextGeometry("₿", { font, size: 0.45, height: 0.05 });
-      const btc = new THREE.Mesh(btcGeo, silverMat);
-      btc.position.set(-0.22, -0.25, 0.05);
-      btcCoin.add(btc);
-      btcGroup.add(btcCoin);
-
-      startAnimation();
-    });
-
-    // Chess King
+    // Center King
     const base = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.6, 0.2, 32), goldMat);
     const body = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.35, 0.8, 32), silverMat);
     const crown = new THREE.Mesh(new THREE.ConeGeometry(0.25, 0.4, 32), goldMat);
     crown.position.y = 0.7;
-    kingGroup.add(base, body, crown);
-
-    // Positioning
-    coinGroup.position.x = -2.3;
-    kingGroup.position.x = 0;
-    btcGroup.position.x = 2.3;
+    const kingGroup = new THREE.Group();
     base.position.y = -0.3;
     body.position.y = 0.2;
+    kingGroup.add(base, body, crown);
+    kingGroup.position.x = 0;
     kingGroup.scale.set(1.2, 1.2, 1.2);
+    scene.add(kingGroup);
 
-    function startAnimation() {
-      function animate() {
-        requestAnimationFrame(animate);
-        coinGroup.rotation.y += 0.015;
-        kingGroup.rotation.y += 0.015;
-        btcGroup.rotation.y += 0.015;
-        renderer.render(scene, camera);
-      }
-      animate();
+    // Right Bitcoin Coin
+    const rightCoin = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 0.1, 64), goldMat);
+    const btcRing = new THREE.Mesh(new THREE.TorusKnotGeometry(0.25, 0.08, 64, 16), silverMat);
+    btcRing.rotation.x = Math.PI / 2;
+    rightCoin.add(btcRing);
+    rightCoin.position.x = 2.5;
+    scene.add(rightCoin);
+
+    function animate() {
+      requestAnimationFrame(animate);
+      leftCoin.rotation.y += 0.015;
+      rightCoin.rotation.y += 0.015;
+      kingGroup.rotation.y += 0.015;
+      renderer.render(scene, camera);
     }
+    animate();
 
     window.addEventListener("resize", () => {
       camera.aspect = container.clientWidth / container.clientHeight;
