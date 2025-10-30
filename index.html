@@ -1,199 +1,320 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>SSCWC Chess Crypto Kings</title>
 <style>
-  body {
-    margin: 0;
-    font-family: "Poppins", sans-serif;
-    background: #000;
-    color: #ffd700;
-    text-align: center;
-  }
+  *,*::before,*::after{box-sizing:border-box}
+  body{ margin:0; font-family:"Poppins", Arial, sans-serif; background:#000; color:#ffd700; text-align:center }
+  h1{ font-size:1.6rem; margin:10px 0 0; color:#ffd700 }
+  h2.slogan{ font-style:italic; color:#fddb6b; margin:4px 0 12px }
 
-  /* Coin area */
-  #top3D {
-    margin-top: 20px;
-    display: flex;
-    justify-content: center;
-  }
-  .coin {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    background: radial-gradient(circle at 30% 30%, #ffd700, #b8860b);
-    box-shadow: inset 0 0 12px rgba(255,255,255,0.4),
-                inset -3px -3px 10px rgba(0,0,0,0.3),
-                0 0 25px rgba(255,215,0,0.6);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    animation: spin 8s linear infinite;
-    transform-style: preserve-3d;
-  }
-  @keyframes spin {
-    0% { transform: rotateY(0deg); }
-    100% { transform: rotateY(360deg); }
-  }
+  /* Header coin */
+  #top3D{ width:100%; height:140px; display:flex; justify-content:center; align-items:center; background:radial-gradient(circle at 50% 30%, rgba(255,215,0,0.03), transparent 25%), #000 }
+  .coin{ width:110px; height:110px; border-radius:50%; background:radial-gradient(circle at 30% 30%, #ffdf00 0%, #b8860b 90%); display:flex; justify-content:center; align-items:center; box-shadow: inset 3px 3px 6px rgba(255,255,255,0.25), inset -3px -3px 8px rgba(0,0,0,0.35), 0 0 25px rgba(255,215,0,0.6); animation: spin 9s linear infinite; transform-style: preserve-3d }
+  @keyframes spin{0%{transform:rotateY(0)}100%{transform:rotateY(360deg)}}
+  .coin svg{ width:58px; height:58px; filter: drop-shadow(0 0 6px rgba(255,215,0,0.12)); }
 
-  /* Bitcoin-style B */
-  .coin svg {
-    width: 60px;
-    height: 60px;
-    fill: none;
-    stroke: #fff8dc;
-    stroke-width: 2;
-    filter: drop-shadow(0 0 4px rgba(255,255,255,0.3));
-  }
+  /* Controls */
+  .toolbar{ margin:10px 0; display:flex; gap:8px; justify-content:center; align-items:center; flex-wrap:wrap }
+  input[type="email"]{ padding:8px 10px; border-radius:8px; border:1px solid #444; width:220px; background:#111; color:#fff }
+  button{ padding:8px 12px; border-radius:8px; border:none; cursor:pointer; font-weight:700 }
+  .btn-pink{ background:#ff4fd8; color:#fff }
+  .btn-blue{ background:#0099ff; color:#fff }
+  .btn-green{ background:#29a745; color:#fff }
+  .btn-yellow{ background:#ffc107; color:#000 }
 
-  /* Headings */
-  h1 {
-    font-size: 1.8em;
-    font-weight: 700;
-    margin: 15px 0 0;
-    color: #ffd700;
-  }
-  h2 {
-    font-size: 1.1em;
-    font-style: italic;
-    color: #fdd835;
-    margin: 0 0 20px;
-  }
+  /* Chess area */
+  #chessWrap{ padding:28px 12px; background: radial-gradient(circle at center, #000 60%, #111 100%); border-top:2px solid gold; box-shadow:0 0 20px rgba(255,200,50,0.06); display:flex; justify-content:center }
+  #board{ width:min(560px,94vw); aspect-ratio:1/1; display:grid; grid-template-columns:repeat(8,1fr); grid-template-rows:repeat(8,1fr); border:2px solid gold; box-shadow:0 0 15px rgba(200,160,30,0.18); background-clip:padding-box }
+  .square{ width:100%; height:100%; display:flex; align-items:center; justify-content:center; user-select:none }
+  .light{ background:#f0d9b5 }
+  .dark{ background:#b58863 }
+  .square svg{ width:78%; height:78%; max-width:44px; max-height:44px; pointer-events:none }
+  @media (max-width:420px){ .square svg{ width:72%; height:72% } }
 
-  /* Buttons */
-  button, .btn {
-    display: inline-block;
-    margin: 10px 5px;
-    padding: 10px 20px;
-    font-size: 1em;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    font-weight: 600;
-    color: #fff;
-  }
-  .pink { background: #ff5ec4; }
-  .blue { background: #007bff; }
-  .green { background: #28a745; }
-  .yellow { background: #ffc107; color: #000; }
-
-  input {
-    margin: 10px;
-    padding: 10px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    width: 220px;
-    font-size: 1em;
-  }
-
-  /* Chessboard container */
-  #boardContainer {
-    display: flex;
-    justify-content: center;
-    margin-top: 25px;
-  }
-
-  /* Chessboard grid */
-  #chessboard {
-    display: grid;
-    grid-template-columns: repeat(8, 1fr);
-    grid-template-rows: repeat(8, 1fr);
-    width: 90vw;
-    max-width: 400px;
-    aspect-ratio: 1;
-    border: 4px solid #ffd700;
-    box-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
-  }
-
-  .square {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  .light { background: #f0d9b5; }
-  .dark { background: #b58863; }
-
-  /* Chess pieces (SVG) */
-  .square svg {
-    width: 80%;
-    height: 80%;
-    max-width: 40px;
-    max-height: 40px;
-  }
-
-  @media (max-width: 600px) {
-    #chessboard { max-width: 320px; }
-  }
+  /* status */
+  #status{ margin-top:8px; color:#fff8; font-size:0.95rem }
 </style>
 </head>
 <body>
-  <div id="top3D">
-    <div class="coin">
-      <!-- Bitcoin-style "B" logo -->
-      <svg viewBox="0 0 100 100">
-        <path d="M45 25h10a10 10 0 0 1 0 20h-10zm0 20h12a10 10 0 0 1 0 20H45z" fill="#fff8dc" stroke="none"/>
-        <rect x="43" y="15" width="4" height="70" fill="#fff8dc"/>
-        <rect x="53" y="15" width="4" height="70" fill="#fff8dc"/>
-      </svg>
-    </div>
-  </div>
+
+  <div id="top3D"><div class="coin" aria-hidden="true">
+    <!-- Flat Bitcoin-like "B" icon -->
+    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M45 25h10a10 10 0 0 1 0 20h-10zM45 45h12a10 10 0 0 1 0 20H45z" fill="#fff8dc" stroke="none"/>
+      <rect x="43" y="15" width="4" height="70" fill="#fff8dc"/>
+      <rect x="53" y="15" width="4" height="70" fill="#fff8dc"/>
+    </svg>
+  </div></div>
 
   <h1>SSCWC Chess Crypto Kings</h1>
-  <h2>The Future of Gold on Blockchain</h2>
+  <h2 class="slogan">The Future of Gold on Blockchain</h2>
 
-  <div>
-    <button class="btn pink">💎 Get SSCWC on Uniswap</button>
-    <button class="btn blue">Connect Wallet (BSC Testnet)</button><br>
-    <button class="btn green">Create Game</button>
-    <input id="gameId" placeholder="Paste Game ID" />
-    <button class="btn yellow">Join</button>
+  <div class="toolbar" id="authToolbar">
+    <input id="emailInput" type="email" placeholder="Your email (for quick sign-in)" />
+    <button id="sendLinkBtn" class="btn-pink">Send Magic Link</button>
+    <button id="connectBtn" class="btn-blue">Connect Wallet (BSC Testnet)</button>
+    <button id="createBtn" class="btn-green">Create Game</button>
   </div>
 
-  <div id="boardContainer">
-    <div id="chessboard"></div>
+  <div id="status">Not signed in — enter your email and click "Send Magic Link"</div>
+
+  <div id="chessWrap">
+    <div id="board" role="grid" aria-label="Chessboard"></div>
   </div>
 
+  <!-- Required libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/chess.js@1.0.0-beta.6/dist/chess.min.js"></script>
+  <!-- Stockfish as a web worker -->
   <script>
-    const board = document.getElementById("chessboard");
-    const pieces = {
-      R: `<svg viewBox="0 0 45 45"><path d="M9 39h27v3H9zM12 36h21v3H12zM15 33h15v3H15zM18 30h9v3h-9zM15 27h15v3H15zM12 24h21v3H12zM9 21h27v3H9zM6 18h33v3H6z" fill="currentColor"/></svg>`,
-      N: `<svg viewBox="0 0 45 45"><path d="M9 36h27v6H9zM12 30h21v6H12zM15 18h15v12H15zM18 12h9v6h-9z" fill="currentColor"/></svg>`,
-      B: `<svg viewBox="0 0 45 45"><circle cx="22.5" cy="22.5" r="10" fill="currentColor"/></svg>`,
-      Q: `<svg viewBox="0 0 45 45"><circle cx="22.5" cy="15" r="4"/><circle cx="14" cy="18" r="3"/><circle cx="31" cy="18" r="3"/><rect x="10" y="20" width="25" height="12" rx="3" fill="currentColor"/></svg>`,
-      K: `<svg viewBox="0 0 45 45"><rect x="20" y="10" width="5" height="25" fill="currentColor"/><circle cx="22.5" cy="10" r="3" fill="currentColor"/></svg>`,
-      P: `<svg viewBox="0 0 45 45"><circle cx="22.5" cy="15" r="5" fill="currentColor"/><rect x="19" y="20" width="7" height="10" fill="currentColor"/></svg>`
+    // Create Stockfish worker. This URL is commonly available on jsdelivr — if CORS prevents worker loading in your environment, you may need to host the worker file or use a different CDN.
+    // We'll attempt a stable version; if needed we provide fallback to a simpler JS opponent.
+    const STOCKFISH_WORKER_URL = 'https://cdn.jsdelivr.net/npm/stockfish@15.1.0/src/stockfish.js';
+  </script>
+
+  <!-- Firebase v10 modular imports + app logic -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+    import { getAuth, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+    // ---------- Replace with your actual Firebase config (already provided) ----------
+    const firebaseConfig = {
+      apiKey: "AIzaSyCiU4bLmbd5pJ6sv13TAMIk4eh8Exhid4o",
+      authDomain: "sscwc-chess.firebaseapp.com",
+      databaseURL: "https://sscwc-chess-default-rtdb.firebaseio.com",
+      projectId: "sscwc-chess",
+      storageBucket: "sscwc-chess.firebasestorage.app",
+      messagingSenderId: "382398698085",
+      appId: "1:382398698085:web:cc902f0f1b6b1b93602c8c"
     };
+    // ---------------------------------------------------------------------------------
 
-    const layout = [
-      ["R","N","B","Q","K","B","N","R"],
-      ["P","P","P","P","P","P","P","P"],
-      ["","","","","","","",""],
-      ["","","","","","","",""],
-      ["","","","","","","",""],
-      ["","","","","","","",""],
-      ["P","P","P","P","P","P","P","P"],
-      ["R","N","B","Q","K","B","N","R"]
-    ];
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-    for (let row = 0; row < 8; row++) {
-      for (let col = 0; col < 8; col++) {
-        const square = document.createElement("div");
-        square.classList.add("square");
-        square.classList.add((row + col) % 2 === 0 ? "light" : "dark");
+    // UI refs
+    const emailInput = document.getElementById('emailInput');
+    const sendLinkBtn = document.getElementById('sendLinkBtn');
+    const status = document.getElementById('status');
+    const boardEl = document.getElementById('board');
 
-        const piece = layout[row][col];
-        if (piece) {
-          const pieceColor = row < 2 ? "#c0c0c0" : "#ffd700";
-          square.innerHTML = pieces[piece].replace(/currentColor/g, pieceColor);
+    // chess.js game state
+    const Chess = window.Chess; // chess.js attaches Chess to window
+    const game = new Chess();
+
+    // Build and render board squares (static layout initially) — reused later for updates
+    const files = ['a','b','c','d','e','f','g','h'];
+    function buildEmptyBoard(){
+      boardEl.innerHTML = '';
+      for(let r=0;r<8;r++){
+        for(let f=0;f<8;f++){
+          const sq = document.createElement('div');
+          sq.className = 'square ' + ((r+f)%2===0 ? 'light' : 'dark');
+          sq.dataset.square = files[f] + (8 - r);
+          boardEl.appendChild(sq);
         }
-
-        board.appendChild(square);
       }
     }
+    buildEmptyBoard();
+
+    // SVG piece factory (same as earlier used)
+    function svgFor(type, color){
+      const goldFill='#D4AF37', goldRim='#B8860B', silverFill='#C0C0C0', silverRim='#9E9E9E';
+      const fill=color==='w'?goldFill:silverFill, rim=color==='w'?goldRim:silverRim, highlight='#fff9e6';
+      switch(type){
+        case 'p': return `<svg viewBox="0 0 120 120" class="piece"><circle cx="60" cy="38" r="15" fill="${rim}"/><circle cx="60" cy="38" r="12" fill="${fill}"/><rect x="42" y="58" width="36" height="30" rx="4" fill="${rim}"/><rect x="44" y="60" width="32" height="26" rx="4" fill="${fill}"/><ellipse cx="60" cy="92" rx="34" ry="6" fill="rgba(0,0,0,0.06)"/></svg>`;
+        case 'r': return `<svg viewBox="0 0 120 120" class="piece"><rect x="34" y="28" width="52" height="64" fill="${rim}"/><rect x="36" y="30" width="48" height="60" fill="${fill}"/><rect x="28" y="22" width="12" height="8" fill="${rim}"/><rect x="44" y="22" width="12" height="8" fill="${rim}"/><rect x="60" y="22" width="12" height="8" fill="${rim}"/><ellipse cx="60" cy="94" rx="36" ry="6" fill="rgba(0,0,0,0.06)"/></svg>`;
+        case 'n': return `<svg viewBox="0 0 120 120" class="piece"><path d="M38 90 C36 68, 54 56, 70 54 C82 52, 88 46, 86 36 C84 26, 74 24, 64 28 C56 30, 52 38, 48 40 C44 42, 38 38, 34 42 C32 46, 38 54, 44 58 C34 66, 36 90, 38 90 Z" fill="${rim}"/><path d="M42 86 C40 66, 56 54, 70 52 C80 50, 84 44, 82 36 C80 28, 72 26, 64 30 C56 32, 52 38, 48 40 C44 42, 38 38, 36 42 C34 46, 38 54, 44 58 C34 66, 38 86, 42 86 Z" fill="${fill}"/><circle cx="68" cy="40" r="2.8" fill="${highlight}"/><ellipse cx="60" cy="94" rx="34" ry="6" fill="rgba(0,0,0,0.06)"/></svg>`;
+        case 'b': return `<svg viewBox="0 0 120 120" class="piece"><path d="M60 28 C46 48, 38 58, 38 74 L82 74 C82 58, 74 48, 60 28 Z" fill="${rim}"/><path d="M60 32 C48 50, 42 58, 42 74 L78 74 C78 58, 72 50, 60 32 Z" fill="${fill}"/><rect x="58" y="40" width="4" height="24" fill="${highlight}" opacity="0.65" transform="rotate(-20 60 52)"/><ellipse cx="60" cy="94" rx="34" ry="6" fill="rgba(0,0,0,0.06)"/></svg>`;
+        case 'q': return `<svg viewBox="0 0 120 120" class="piece"><path d="M24 62 L34 40 L46 62 L60 36 L74 62 L86 40 L96 62 L96 76 L24 76 Z" fill="${rim}"/><path d="M28 64 L34 44 L46 64 L60 40 L74 64 L86 44 L92 64 L92 72 L28 72 Z" fill="${fill}"/><circle cx="34" cy="40" r="4" fill="${highlight}"/><circle cx="60" cy="36" r="4" fill="${highlight}"/><circle cx="86" cy="40" r="4" fill="${highlight}"/><ellipse cx="60" cy="94" rx="34" ry="6" fill="rgba(0,0,0,0.06)"/></svg>`;
+        case 'k': return `<svg viewBox="0 0 120 120" class="piece"><path d="M24 58 L36 36 L48 58 L60 40 L72 58 L84 36 L96 58 L96 76 L24 76 Z" fill="${rim}"/><path d="M28 60 L36 40 L48 60 L60 44 L72 60 L84 40 L92 60 L92 72 L28 72 Z" fill="${fill}"/><rect x="56" y="18" width="8" height="20" fill="${rim}" /><rect x="52" y="26" width="16" height="6" fill="${fill}" /><ellipse cx="60" cy="94" rx="34" ry="6" fill="rgba(0,0,0,0.06)"/></svg>`;
+        default: return `<svg viewBox="0 0 120 120" class="piece"><circle cx="60" cy="60" r="44" fill="${fill}" stroke="${rim}" stroke-width="4"/></svg>`;
+      }
+    }
+
+    // Render board (pieces from chess.js position)
+    function renderBoard(){
+      const squares = boardEl.querySelectorAll('.square');
+      squares.forEach(sq => sq.innerHTML = '');
+      const boardObj = game.board(); // returns array [rank8..rank1] each rank has 8 squares
+      for(let r = 0; r < 8; r++){
+        for(let f = 0; f < 8; f++){
+          const piece = boardObj[r][f];
+          if(piece){
+            const squareIndex = r*8 + f;
+            const sqEl = boardEl.children[squareIndex];
+            const svg = svgFor(piece.type, piece.color === 'w' ? 'w' : 'b');
+            sqEl.innerHTML = svg;
+          }
+        }
+      }
+    }
+
+    // Click-to-move basics (select source and destination)
+    let selectedSquare = null;
+    boardEl.addEventListener('click', (ev) => {
+      const target = ev.target.closest('.square');
+      if(!target) return;
+      const sq = target.dataset.square;
+      if(!sq) return;
+      // if no user logged in yet, ignore moves
+      if(!currentUserEmail) { status.textContent = 'Please sign in to play'; return; }
+
+      // if no piece selected -> select if piece belongs to player (we make player white)
+      if(!selectedSquare){
+        const p = game.get(sq);
+        if(p && p.color === 'w'){ selectedSquare = sq; target.style.outline = '3px solid rgba(255,215,0,0.6)'; }
+        return;
+      } else {
+        // attempt move
+        const move = game.move({ from: selectedSquare, to: sq, promotion: 'q' });
+        // clear previous highlight
+        const prevEl = [...boardEl.children].find(el => el.dataset.square === selectedSquare);
+        if(prevEl) prevEl.style.outline = '';
+        selectedSquare = null;
+        if(move){
+          renderBoard();
+          // after successful player move, ask AI to respond
+          window.setTimeout(() => aiMove(), 120); // small delay for UX
+        } else {
+          // illegal move
+          status.textContent = 'Illegal move';
+          window.setTimeout(()=> status.textContent = (currentUserEmail? 'Playing AI (level 3)' : 'Not signed in'), 900);
+        }
+      }
+    });
+
+    // Stockfish setup as Worker
+    let engine = null;
+    let engineReady = false;
+    function startEngine(skill=3){
+      try {
+        engine && engine.terminate();
+        engine = new Worker(STOCKFISH_WORKER_URL);
+      } catch(e){
+        console.warn('Worker creation failed — falling back to non-worker (if available).', e);
+        try { engine = STOCKFISH(); } catch(err){ console.error('Stockfish not available', err); engine = null; }
+      }
+      if(!engine){ status.textContent = 'AI engine not available in this environment.'; return; }
+      engine.onmessage = (e) => {
+        const msg = typeof e.data === 'string' ? e.data : e.data?.message;
+        if(!msg) return;
+        // look for bestmove
+        if(msg.startsWith('uciok')) { engineReady = true; engine.postMessage('isready'); }
+        if(msg.startsWith('readyok')){ engineReady = true; engine.postMessage('ucinewgame'); engine.postMessage('setoption name Skill Level value ' + skill); }
+        if(msg.startsWith('bestmove')){
+          const parts = msg.split(' ');
+          if(parts[1]){
+            const best = parts[1].trim();
+            // apply engine move
+            const from = best.substring(0,2), to = best.substring(2,4);
+            game.move({from,to,promotion:'q'});
+            renderBoard();
+            // check game over
+            if(game.game_over()){
+              status.textContent = 'Game over — ' + (game.in_checkmate()? (game.turn()==='b'? 'You win!' : 'AI wins') : 'Draw');
+            }
+          }
+        }
+      };
+      // init
+      engine.postMessage('uci');
+    }
+
+    // ask AI to compute move from current position
+    function aiMove(){
+      if(!engine || !engineReady) { console.warn('Engine not ready'); return; }
+      const fen = game.fen();
+      engine.postMessage('position fen ' + fen);
+      engine.postMessage('go depth 12'); // depth gives reasonable strength but still fast; skill option also set
+    }
+
+    // Auto-start a fresh game (player as white)
+    function newGame(){
+      game.reset();
+      renderBoard();
+      status.textContent = (currentUserEmail? 'Playing AI (level 3)' : 'Not signed in — sign in to play');
+      // engine already ready -> if AI to move (player always white) we skip
+    }
+
+    // Handle login / send magic link
+    sendLinkBtn.addEventListener('click', async () => {
+      const email = emailInput.value && emailInput.value.trim().toLowerCase();
+      if(!email) { alert('Enter a valid email'); return; }
+      const actionCodeSettings = {
+        // The URL you want to redirect back to after email click. Must be allowed in Firebase Authorized Domains.
+        url: window.location.href,
+        handleCodeInApp: true
+      };
+      try{
+        await sendSignInLinkToEmail(auth, email, actionCodeSettings);
+        // Save email locally so we can complete sign-in after clicking link
+        localStorage.setItem('emailForSignIn', email);
+        alert('Magic link sent — check your email and click the link to sign in. If you do not see it, check promotions/spam.');
+        status.textContent = 'Magic link sent — check your email';
+      } catch(err){
+        console.error('sendSignInLinkToEmail error', err);
+        alert('Failed to send link: ' + (err.message || err));
+      }
+    });
+
+    // Complete sign-in if we are returning from the link
+    async function tryCompleteSignIn(){
+      try {
+        if(isSignInWithEmailLink(auth, window.location.href)){
+          // get the stored email
+          let email = localStorage.getItem('emailForSignIn');
+          if(!email){
+            email = window.prompt('Enter the email you used to sign in');
+          }
+          if(!email) return;
+          const result = await signInWithEmailLink(auth, email, window.location.href);
+          // Clear saved email
+          localStorage.removeItem('emailForSignIn');
+          // result.user contains signed-in user
+          status.textContent = 'Signed in: ' + (result.user.email || '(no-email)');
+        }
+      } catch(err){
+        console.error('Error completing sign-in', err);
+      }
+    }
+
+    // Track auth state changes
+    let currentUserEmail = null;
+    onAuthStateChanged(auth, async (user) => {
+      if(user){
+        currentUserEmail = user.email || user.multiFactor?.user?.email || null;
+        status.textContent = 'Signed in: ' + (currentUserEmail || '(no-email)') + ' — Starting AI match';
+        // Log to Firestore
+        try{
+          await addDoc(collection(db,'logins'), { email: currentUserEmail || 'unknown', ts: serverTimestamp() });
+        } catch(err){ console.error('Firestore log failed', err); }
+        // Start engine and game
+        startEngine(3); // skill level 3
+        newGame();
+      } else {
+        currentUserEmail = null;
+        status.textContent = 'Not signed in — enter your email and click "Send Magic Link"';
+        // ensure engine terminated
+        if(engine){ try{ engine.terminate(); }catch(e){} engine=null; engineReady=false; }
+        // rebuild board clean
+        newGame();
+      }
+    });
+
+    // On initial load, attempt to complete sign-in if link present
+    tryCompleteSignIn();
+
+    // Initialize an empty board and game so the page always shows something
+    newGame();
+
+    // Simple wallet/connect/create placeholder hooks (you can replace with your wallet logic)
+    document.getElementById('connectBtn').addEventListener('click', ()=>{ alert('Connect Wallet placeholder — implement BSC wallet connect here'); });
+    document.getElementById('createBtn').addEventListener('click', ()=>{ alert('Create Game placeholder — implement on-chain create here'); });
   </script>
 </body>
 </html>
