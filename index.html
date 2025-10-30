@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -106,8 +105,11 @@
   <h1>SSCWC Chess Crypto Kings</h1>
   <h2 class="slogan">The Future of Gold on Blockchain</h2>
 
-<a href="https://app.uniswap.org/explore/tokens/bnb/0xd7deadbf768dec8ac13850e4f6787ac53a9d0447"
-target="_blank" rel="noopener noreferrer" class="uniswap-btn">💎 Get SSCWC on Uniswap</a> <button id="connect">Connect Wallet (BSC Testnet)</button>
+  <a href="https://app.uniswap.org/explore/tokens/bnb/0xd7deadbf768dec8ac13850e4f6787ac53a9d0447"
+     target="_blank" rel="noopener noreferrer" class="uniswap-btn">
+     💎 Get SSCWC on Uniswap
+  </a>
+  <button id="connect">Connect Wallet (BSC Testnet)</button>
 
   <div id="controls">
     <button id="createBtn">Create Game</button>
@@ -119,8 +121,8 @@ target="_blank" rel="noopener noreferrer" class="uniswap-btn">💎 Get SSCWC on 
 
   <div id="chessContainer"></div>
 
+  <!-- Enhanced 3D Visualization and Rotation -->
   <script src="https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.min.js"></script>
-
   <script>
     const container = document.getElementById("threeContainer");
     const scene = new THREE.Scene();
@@ -129,26 +131,30 @@ target="_blank" rel="noopener noreferrer" class="uniswap-btn">💎 Get SSCWC on 
     renderer.setSize(container.clientWidth, container.clientHeight);
     container.appendChild(renderer.domElement);
 
-    const ambient = new THREE.AmbientLight(0xffffff, 1.2);
-    const point = new THREE.PointLight(0xffd700, 2.5, 100);
-    point.position.set(0, 5, 8);
-    scene.add(ambient, point);
+    // LIGHTS
+    const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.4);
+    hemiLight.position.set(0, 1, 0);
+    scene.add(hemiLight);
+    const point = new THREE.PointLight(0xffd700, 3, 100);
+    point.position.set(0, 3, 5);
+    scene.add(point);
 
-    camera.position.set(0, 0, 7);
+    camera.position.set(0, 0, 6);
 
-    const goldMat = new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 1, roughness: 0.15 });
-    const silverMat = new THREE.MeshStandardMaterial({ color: 0xdddddd, metalness: 1, roughness: 0.2 });
+    // MATERIALS
+    const goldMat = new THREE.MeshPhysicalMaterial({ color: 0xffd700, metalness: 1, roughness: 0.05, reflectivity: 1, clearcoat: 1 });
+    const silverMat = new THREE.MeshPhysicalMaterial({ color: 0xe0e0e0, metalness: 1, roughness: 0.1, reflectivity: 1 });
 
-    // Left Gold Coin
-    const leftCoin = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 0.1, 64), goldMat);
-    const dollar = new THREE.Mesh(new THREE.TorusGeometry(0.3, 0.05, 16, 32), silverMat);
+    // LEFT COIN
+    const leftCoin = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.7, 0.12, 64), goldMat);
+    const dollar = new THREE.Mesh(new THREE.TorusGeometry(0.35, 0.06, 16, 32), silverMat);
     dollar.rotation.x = Math.PI / 2;
     leftCoin.add(dollar);
     leftCoin.position.x = -2.5;
     scene.add(leftCoin);
 
-    // Center King
-    const base = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.6, 0.2, 32), goldMat);
+    // KING
+    const base = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.65, 0.2, 32), goldMat);
     const body = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.35, 0.8, 32), silverMat);
     const crown = new THREE.Mesh(new THREE.ConeGeometry(0.25, 0.4, 32), goldMat);
     crown.position.y = 0.7;
@@ -157,32 +163,37 @@ target="_blank" rel="noopener noreferrer" class="uniswap-btn">💎 Get SSCWC on 
     body.position.y = 0.2;
     kingGroup.add(base, body, crown);
     kingGroup.position.x = 0;
-    kingGroup.scale.set(1.2, 1.2, 1.2);
+    kingGroup.scale.set(1.5, 1.5, 1.5);
     scene.add(kingGroup);
 
-    // Right Bitcoin Coin
-    const rightCoin = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 0.1, 64), goldMat);
-    const btcRing = new THREE.Mesh(new THREE.TorusKnotGeometry(0.25, 0.08, 64, 16), silverMat);
+    // RIGHT COIN
+    const rightCoin = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.7, 0.12, 64), goldMat);
+    const btcRing = new THREE.Mesh(new THREE.TorusKnotGeometry(0.3, 0.09, 64, 8), silverMat);
     btcRing.rotation.x = Math.PI / 2;
     rightCoin.add(btcRing);
     rightCoin.position.x = 2.5;
     scene.add(rightCoin);
 
+    // ANIMATION
+    leftCoin.rotation.x = 0.3;
+    rightCoin.rotation.x = 0.3;
+    kingGroup.rotation.x = 0.3;
+
     function animate() {
       requestAnimationFrame(animate);
-      leftCoin.rotation.y += 0.015;
-      rightCoin.rotation.y += 0.015;
-      kingGroup.rotation.y += 0.015;
+      leftCoin.rotation.y += 0.02;
+      rightCoin.rotation.y += 0.02;
+      kingGroup.rotation.y += 0.02;
       renderer.render(scene, camera);
     }
     animate();
 
+    // RESIZE
     window.addEventListener("resize", () => {
       camera.aspect = container.clientWidth / container.clientHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(container.clientWidth, container.clientHeight);
     });
   </script>
-
 </body>
 </html>
