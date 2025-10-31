@@ -11,43 +11,48 @@
   h2.slogan{ font-style:italic; color:#fddb6b; margin:4px 0 12px }
 
   /* Header coin */
-  #top3D{ width:100%; height:140px; display:flex; justify-content:center; align-items:center; background:radial-gradient(circle at 50% 30%, rgba(255,215,0,0.03), transparent 25%), #000 }
-  .coin{ width:110px; height:110px; border-radius:50%; background:radial-gradient(circle at 30% 30%, #ffdf00 0%, #b8860b 90%); display:flex; justify-content:center; align-items:center; box-shadow: inset 3px 3px 6px rgba(255,255,255,0.25), inset -3px -3px 8px rgba(0,0,0,0.35), 0 0 25px rgba(255,215,0,0.6); animation: spin 9s linear infinite; transform-style: preserve-3d }
+  #top3D{ width:100%; height:160px; display:flex; justify-content:center; align-items:center; background:radial-gradient(circle at 50% 30%, rgba(255,215,0,0.03), transparent 25%), #000 }
+  .coin{ width:120px; height:120px; border-radius:50%; background:radial-gradient(circle at 30% 30%, #ffdf00 0%, #b8860b 90%); display:flex; justify-content:center; align-items:center; box-shadow: inset 3px 3px 6px rgba(255,255,255,0.25), inset -3px -3px 8px rgba(0,0,0,0.35), 0 0 25px rgba(255,215,0,0.6); animation: spin 9s linear infinite; transform-style:preserve-3d }
+  .coin svg{ width:64px; height:64px; filter: drop-shadow(0 0 8px rgba(255,215,0,0.15)); }
   @keyframes spin{0%{transform:rotateY(0)}100%{transform:rotateY(360deg)}}
-  .coin svg{ width:58px; height:58px; filter: drop-shadow(0 0 6px rgba(255,215,0,0.12)); }
 
   /* Controls */
   .toolbar{ margin:10px 0; display:flex; gap:8px; justify-content:center; align-items:center; flex-wrap:wrap }
-  input[type="email"]{ padding:8px 10px; border-radius:8px; border:1px solid #444; width:220px; background:#111; color:#fff }
-  button{ padding:8px 12px; border-radius:8px; border:none; cursor:pointer; font-weight:700 }
+  input[type="email"]{ padding:10px 12px; border-radius:10px; border:1px solid #444; width:240px; background:#111; color:#fff; outline:none }
+  button{ padding:10px 14px; border-radius:10px; border:none; cursor:pointer; font-weight:700 }
   .btn-pink{ background:#ff4fd8; color:#fff }
   .btn-blue{ background:#0099ff; color:#fff }
   .btn-green{ background:#29a745; color:#fff }
   .btn-yellow{ background:#ffc107; color:#000 }
 
   /* Chess area */
-  #chessWrap{ padding:28px 12px; background: radial-gradient(circle at center, #000 60%, #111 100%); border-top:2px solid gold; box-shadow:0 0 20px rgba(255,200,50,0.06); display:flex; justify-content:center }
-  #board{ width:min(560px,94vw); aspect-ratio:1/1; display:grid; grid-template-columns:repeat(8,1fr); grid-template-rows:repeat(8,1fr); border:2px solid gold; box-shadow:0 0 15px rgba(200,160,30,0.18); background-clip:padding-box }
-  .square{ width:100%; height:100%; display:flex; align-items:center; justify-content:center; user-select:none }
+  #chessWrap{ padding:28px 12px 48px 12px; background: radial-gradient(circle at center, #000 60%, #111 100%); border-top:2px solid gold; box-shadow:0 0 20px rgba(255,200,50,0.06); display:flex; justify-content:center }
+  #board{ width:min(560px, 94vw); aspect-ratio:1/1; display:grid; grid-template-columns:repeat(8,1fr); grid-template-rows:repeat(8,1fr); border:3px solid gold; box-shadow:0 0 24px rgba(200,160,30,0.18); background-clip:padding-box; touch-action:none }
+  .square{ width:100%; height:100%; display:flex; align-items:center; justify-content:center; user-select:none; position:relative; overflow:hidden }
   .light{ background:#f0d9b5 }
   .dark{ background:#b58863 }
-  .square svg{ width:78%; height:78%; max-width:44px; max-height:44px; pointer-events:none }
+  .square svg{ width:78%; height:78%; max-width:64px; max-height:64px; pointer-events:none; display:block }
   @media (max-width:420px){ .square svg{ width:72%; height:72% } }
 
   /* status */
   #status{ margin-top:8px; color:#fff8; font-size:0.95rem }
+
+  /* small highlight on selected */
+  .square.selected{ outline:4px solid rgba(255,215,0,0.5); box-sizing:border-box }
 </style>
 </head>
 <body>
 
-  <div id="top3D"><div class="coin" aria-hidden="true">
-    <!-- Flat Bitcoin-like "B" icon -->
-    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <path d="M45 25h10a10 10 0 0 1 0 20h-10zM45 45h12a10 10 0 0 1 0 20H45z" fill="#fff8dc" stroke="none"/>
-      <rect x="43" y="15" width="4" height="70" fill="#fff8dc"/>
-      <rect x="53" y="15" width="4" height="70" fill="#fff8dc"/>
-    </svg>
-  </div></div>
+  <div id="top3D">
+    <div class="coin" aria-hidden="true">
+      <!-- bitcoin-like "B" -->
+      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect x="42" y="12" width="4" height="76" fill="#fff8dc"/>
+        <rect x="54" y="12" width="4" height="76" fill="#fff8dc"/>
+        <path d="M44 24h10a10 10 0 0 1 0 20h-10zM44 44h12a10 10 0 0 1 0 20H44z" fill="#fff8dc"/>
+      </svg>
+    </div>
+  </div>
 
   <h1>SSCWC Chess Crypto Kings</h1>
   <h2 class="slogan">The Future of Gold on Blockchain</h2>
@@ -57,7 +62,6 @@
     <button id="sendLinkBtn" class="btn-pink">Send Magic Link</button>
     <button id="connectBtn" class="btn-blue">Connect Wallet (BSC Testnet)</button>
     <button id="createBtn" class="btn-green">Create Game</button>
-    <button id="buyBtn" class="btn-yellow" onclick="window.open('https://app.uniswap.org/', '_blank')">Buy SSCWC on Uniswap</button>
   </div>
 
   <div id="status">Not signed in — enter your email and click "Send Magic Link"</div>
@@ -66,23 +70,22 @@
     <div id="board" role="grid" aria-label="Chessboard"></div>
   </div>
 
-  <!-- ✅ Correct chess.js import -->
-  <script type="module">
-    import { Chess } from "https://cdn.jsdelivr.net/npm/chess.js@1.0.0-beta.6/+esm";
-    window.Chess = Chess;
-  </script>
+  <!-- chess.js (non-module) - exposes window.Chess -->
+  <script src="https://cdn.jsdelivr.net/npm/chess.js@1.0.0-beta.6/dist/chess.min.js"></script>
 
-  <!-- Stockfish worker setup -->
+  <!-- STOCKFISH worker URL -->
   <script>
     const STOCKFISH_WORKER_URL = 'https://cdn.jsdelivr.net/npm/stockfish@15.1.0/src/stockfish.js';
   </script>
 
-  <!-- Firebase v10 + main logic -->
+  <!-- Firebase (module) + game logic in same module -->
   <script type="module">
+    // Firebase imports (v10)
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
     import { getAuth, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
     import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
+    // ---------- Replace with your actual Firebase config ----------
     const firebaseConfig = {
       apiKey: "AIzaSyCiU4bLmbd5pJ6sv13TAMIk4eh8Exhid4o",
       authDomain: "sscwc-chess.firebaseapp.com",
@@ -92,26 +95,34 @@
       messagingSenderId: "382398698085",
       appId: "1:382398698085:web:cc902f0f1b6b1b93602c8c"
     };
+    // -------------------------------------------------------------
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
 
+    // DOM refs
     const emailInput = document.getElementById('emailInput');
     const sendLinkBtn = document.getElementById('sendLinkBtn');
-    const status = document.getElementById('status');
+    const statusEl = document.getElementById('status');
     const boardEl = document.getElementById('board');
 
+    // chess.js game
+    if (!window.Chess) {
+      console.error('chess.js did not load; window.Chess is undefined.');
+      statusEl.textContent = 'Error: chess engine not loaded.';
+    }
     const Chess = window.Chess;
     const game = new Chess();
 
+    // build empty board grid (rank8..rank1; left-to-right files a..h)
     const files = ['a','b','c','d','e','f','g','h'];
-    function buildEmptyBoard(){
+    function buildEmptyBoard() {
       boardEl.innerHTML = '';
-      for(let r=0;r<8;r++){
-        for(let f=0;f<8;f++){
+      for (let r = 0; r < 8; r++) {
+        for (let f = 0; f < 8; f++) {
           const sq = document.createElement('div');
-          sq.className = 'square ' + ((r+f)%2===0 ? 'light' : 'dark');
+          sq.className = 'square ' + ((r + f) % 2 === 0 ? 'light' : 'dark');
           sq.dataset.square = files[f] + (8 - r);
           boardEl.appendChild(sq);
         }
@@ -119,132 +130,278 @@
     }
     buildEmptyBoard();
 
-    function svgFor(type, color){
-      const goldFill='#D4AF37', goldRim='#B8860B', silverFill='#C0C0C0', silverRim='#9E9E9E';
-      const fill=color==='w'?goldFill:silverFill, rim=color==='w'?goldRim:silverRim, highlight='#fff9e6';
+    // SVG piece factory - returns inline SVG string
+    function svgFor(type, color) {
+      // color: 'w' or 'b'
+      const goldFill = '#D4AF37', goldRim = '#B8860B';
+      const silverFill = '#C0C0C0', silverRim = '#9E9E9E';
+      const fill = (color === 'w') ? goldFill : silverFill;
+      const rim  = (color === 'w') ? goldRim  : silverRim;
+      const highlight = (color === 'w') ? '#fffaf0' : '#f2f2f2';
+
       switch(type){
-        case 'p': return `<svg viewBox="0 0 120 120"><circle cx="60" cy="38" r="15" fill="${rim}"/><circle cx="60" cy="38" r="12" fill="${fill}"/></svg>`;
-        default: return `<svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="44" fill="${fill}" stroke="${rim}" stroke-width="4"/></svg>`;
+        case 'p':
+          return `<svg viewBox="0 0 120 120" class="piece" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="60" cy="38" r="15" fill="${rim}"/><circle cx="60" cy="38" r="12" fill="${fill}"/>
+            <rect x="42" y="58" width="36" height="30" rx="4" fill="${rim}"/>
+            <rect x="44" y="60" width="32" height="26" rx="4" fill="${fill}"/>
+            <ellipse cx="60" cy="92" rx="34" ry="6" fill="rgba(0,0,0,0.06)"/>
+          </svg>`;
+        case 'r':
+          return `<svg viewBox="0 0 120 120" class="piece" xmlns="http://www.w3.org/2000/svg">
+            <rect x="34" y="28" width="52" height="64" fill="${rim}"/><rect x="36" y="30" width="48" height="60" fill="${fill}"/>
+            <rect x="28" y="22" width="12" height="8" fill="${rim}"/><rect x="44" y="22" width="12" height="8" fill="${rim}"/><rect x="60" y="22" width="12" height="8" fill="${rim}"/>
+            <ellipse cx="60" cy="94" rx="36" ry="6" fill="rgba(0,0,0,0.06)"/>
+          </svg>`;
+        case 'n':
+          return `<svg viewBox="0 0 120 120" class="piece" xmlns="http://www.w3.org/2000/svg">
+            <path d="M38 90 C36 68, 54 56, 70 54 C82 52, 88 46, 86 36 C84 26, 74 24, 64 28 C56 30, 52 38, 48 40 C44 42, 38 38, 34 42 C32 46, 38 54, 44 58 C34 66, 36 90, 38 90 Z" fill="${rim}"/>
+            <path d="M42 86 C40 66, 56 54, 70 52 C80 50, 84 44, 82 36 C80 28, 72 26, 64 30 C56 32, 52 38, 48 40 C44 42, 38 38, 36 42 C34 46, 38 54, 44 58 C34 66, 38 86, 42 86 Z" fill="${fill}"/>
+            <circle cx="68" cy="40" r="2.8" fill="${highlight}"/><ellipse cx="60" cy="94" rx="34" ry="6" fill="rgba(0,0,0,0.06)"/>
+          </svg>`;
+        case 'b':
+          return `<svg viewBox="0 0 120 120" class="piece" xmlns="http://www.w3.org/2000/svg">
+            <path d="M60 28 C46 48, 38 58, 38 74 L82 74 C82 58, 74 48, 60 28 Z" fill="${rim}"/>
+            <path d="M60 32 C48 50, 42 58, 42 74 L78 74 C78 58, 72 50, 60 32 Z" fill="${fill}"/>
+            <rect x="58" y="40" width="4" height="24" fill="${highlight}" opacity="0.65" transform="rotate(-20 60 52)"/><ellipse cx="60" cy="94" rx="34" ry="6" fill="rgba(0,0,0,0.06)"/>
+          </svg>`;
+        case 'q':
+          return `<svg viewBox="0 0 120 120" class="piece" xmlns="http://www.w3.org/2000/svg">
+            <path d="M24 62 L34 40 L46 62 L60 36 L74 62 L86 40 L96 62 L96 76 L24 76 Z" fill="${rim}"/>
+            <path d="M28 64 L34 44 L46 64 L60 40 L74 64 L86 44 L92 64 L92 72 L28 72 Z" fill="${fill}"/>
+            <circle cx="34" cy="40" r="4" fill="${highlight}"/><circle cx="60" cy="36" r="4" fill="${highlight}"/><circle cx="86" cy="40" r="4" fill="${highlight}"/><ellipse cx="60" cy="94" rx="34" ry="6" fill="rgba(0,0,0,0.06)"/>
+          </svg>`;
+        case 'k':
+          return `<svg viewBox="0 0 120 120" class="piece" xmlns="http://www.w3.org/2000/svg">
+            <path d="M24 58 L36 36 L48 58 L60 40 L72 58 L84 36 L96 58 L96 76 L24 76 Z" fill="${rim}"/>
+            <path d="M28 60 L36 40 L48 60 L60 44 L72 60 L84 40 L92 60 L92 72 L28 72 Z" fill="${fill}"/>
+            <rect x="56" y="18" width="8" height="20" fill="${rim}" /><rect x="52" y="26" width="16" height="6" fill="${fill}" /><ellipse cx="60" cy="94" rx="34" ry="6" fill="rgba(0,0,0,0.06)"/>
+          </svg>`;
+        default:
+          return `<svg viewBox="0 0 120 120" class="piece" xmlns="http://www.w3.org/2000/svg"><circle cx="60" cy="60" r="44" fill="${fill}" stroke="${rim}" stroke-width="4"/></svg>`;
       }
     }
 
-    function renderBoard(){
-      const squares = boardEl.querySelectorAll('.square');
-      squares.forEach(sq => sq.innerHTML = '');
-      const boardObj = game.board();
-      for(let r=0;r<8;r++){
-        for(let f=0;f<8;f++){
-          const piece = boardObj[r][f];
-          if(piece){
-            const idx = r*8+f;
-            const sqEl = boardEl.children[idx];
-            sqEl.innerHTML = svgFor(piece.type, piece.color);
+    // Render board from chess.js state
+    function renderBoard() {
+      // board() returns [rank8,...,rank1]
+      const boardArr = game.board();
+      // clear all squares
+      const squares = boardEl.children;
+      for (let i = 0; i < squares.length; i++) squares[i].innerHTML = '';
+      for (let r = 0; r < 8; r++) {
+        for (let f = 0; f < 8; f++) {
+          const piece = boardArr[r][f];
+          if (piece) {
+            const idx = r * 8 + f; // because boardEl built with r=0..7 then f
+            const svg = svgFor(piece.type, piece.color);
+            squares[idx].innerHTML = svg;
           }
         }
       }
     }
 
+    // click-to-move (player = white 'w')
     let selectedSquare = null;
-    boardEl.addEventListener('click', ev => {
-      const target = ev.target.closest('.square');
-      if(!target) return;
-      const sq = target.dataset.square;
-      if(!sq) return;
-      if(!currentUserEmail){ status.textContent='Please sign in to play'; return; }
+    boardEl.addEventListener('click', (ev) => {
+      const sq = ev.target.closest('.square');
+      if (!sq) return;
+      const squareName = sq.dataset.square;
+      if (!squareName) return;
+      if (!currentUserEmail) { statusEl.textContent = 'Please sign in to play.'; return; }
 
-      if(!selectedSquare){
-        const p = game.get(sq);
-        if(p && p.color==='w'){ selectedSquare = sq; target.style.outline='3px solid gold'; }
+      // select if contains white piece
+      if (!selectedSquare) {
+        const p = game.get(squareName);
+        if (p && p.color === 'w') {
+          selectedSquare = squareName;
+          sq.classList.add('selected');
+        }
         return;
       } else {
-        const move = game.move({ from:selectedSquare, to:sq, promotion:'q' });
-        const prevEl = [...boardEl.children].find(el => el.dataset.square===selectedSquare);
-        if(prevEl) prevEl.style.outline='';
-        selectedSquare=null;
-        if(move){ renderBoard(); setTimeout(()=>aiMove(),120); }
-        else { status.textContent='Illegal move'; setTimeout(()=>status.textContent='Playing AI',900); }
+        // attempt move
+        const move = game.move({ from: selectedSquare, to: squareName, promotion: 'q' });
+        // clear selection outline
+        const prev = [...boardEl.children].find(child => child.dataset.square === selectedSquare);
+        if (prev) prev.classList.remove('selected');
+        selectedSquare = null;
+
+        if (move) {
+          renderBoard();
+          // after player move, ask AI to respond (small delay)
+          setTimeout(() => requestAIMove(), 150);
+        } else {
+          statusEl.textContent = 'Illegal move';
+          setTimeout(() => statusEl.textContent = (currentUserEmail ? 'Playing AI (level 3)' : 'Not signed in'), 900);
+        }
       }
     });
 
-    let engine=null, engineReady=false;
-    function startEngine(skill=3){
-      try{ engine&&engine.terminate(); engine=new Worker(STOCKFISH_WORKER_URL); }
-      catch(e){ console.warn('Worker creation failed',e); engine=null; }
-      if(!engine){ status.textContent='AI not available'; return; }
-      engine.onmessage = e=>{
-        const msg = typeof e.data==='string'?e.data:e.data?.message;
-        if(!msg) return;
-        if(msg.startsWith('uciok')){ engineReady=true; engine.postMessage('isready'); }
-        if(msg.startsWith('readyok')){ engineReady=true; engine.postMessage('ucinewgame'); engine.postMessage('setoption name Skill Level value '+skill); }
-        if(msg.startsWith('bestmove')){
-          const parts=msg.split(' ');
-          if(parts[1]){
-            const best=parts[1].trim();
-            game.move({from:best.slice(0,2), to:best.slice(2,4), promotion:'q'});
+    // --------- Stockfish engine handling ----------
+    let engine = null;
+    let engineReady = false;
+    let queuedAIMove = false;
+    let requestedDepth = 12; // depth for 'go' (tune for speed/strength)
+    let requestedSkill = 3;  // Stockfish skill (if supported)
+
+    function startEngine(skill = 3) {
+      requestedSkill = skill;
+      engineReady = false;
+      queuedAIMove = false;
+      try {
+        if (engine) {
+          try { engine.terminate(); } catch(e) {}
+          engine = null;
+        }
+        engine = new Worker(STOCKFISH_WORKER_URL);
+      } catch (err) {
+        console.warn('Worker creation failed:', err);
+        engine = null;
+      }
+      if (!engine) {
+        statusEl.textContent = 'AI engine unavailable in this environment.';
+        return;
+      }
+
+      engine.onmessage = function(e) {
+        const msg = typeof e.data === 'string' ? e.data : (e.data && e.data.message) ? e.data.message : '';
+        if (!msg) return;
+        // debug log (uncomment for more info)
+        // console.log('SF ->', msg);
+
+        if (msg.startsWith('uciok')) {
+          engine.postMessage('isready');
+        } else if (msg.startsWith('readyok')) {
+          engineReady = true;
+          engine.postMessage('ucinewgame');
+          // some stockfish builds support Skill Level; attempt
+          try { engine.postMessage('setoption name Skill Level value ' + requestedSkill); } catch(e){}
+          // if we queued a move while engine was warming up -> run it
+          if (queuedAIMove) {
+            queuedAIMove = false;
+            aiComputeMove();
+          }
+        } else if (msg.startsWith('bestmove')) {
+          const parts = msg.split(' ');
+          if (parts[1] && parts[1] !== '(none)') {
+            const best = parts[1].trim();
+            const from = best.substring(0,2), to = best.substring(2,4);
+            game.move({ from, to, promotion: 'q' });
             renderBoard();
+            // check for game over
+            if (game.game_over()) {
+              if (game.in_checkmate()) {
+                statusEl.textContent = (game.turn() === 'b') ? 'You win (AI checkmated)!' : 'AI wins by checkmate';
+              } else {
+                statusEl.textContent = 'Game over (draw/stalemate).';
+              }
+            } else {
+              statusEl.textContent = 'Your turn';
+            }
           }
         }
       };
+
+      // start UCI
       engine.postMessage('uci');
     }
 
-    function aiMove(){
-      if(!engine||!engineReady) return;
-      const fen=game.fen();
-      engine.postMessage('position fen '+fen);
-      engine.postMessage('go depth 12');
+    function aiComputeMove() {
+      if (!engine) {
+        startEngine(requestedSkill);
+      }
+      if (!engineReady) {
+        // queue compute after ready
+        queuedAIMove = true;
+        return;
+      }
+      const fen = game.fen();
+      engine.postMessage('position fen ' + fen);
+      // 'go depth' is quicker but lower strength; depth 12 is a good compromise on mobile/desktop
+      engine.postMessage('go depth ' + requestedDepth);
     }
 
-    function newGame(){
-      game.reset(); renderBoard();
-      status.textContent=(currentUserEmail?'Playing AI':'Not signed in');
+    // a wrapper to request the AI to move (checks engine readiness)
+    function requestAIMove() {
+      // if game over, skip
+      if (game.game_over()) { return; }
+      statusEl.textContent = 'AI is thinking...';
+      aiComputeMove();
     }
 
-    sendLinkBtn.addEventListener('click', async ()=>{
-      const email=emailInput.value.trim().toLowerCase();
-      if(!email){ alert('Enter email'); return; }
-      const settings={ url:window.location.href, handleCodeInApp:true };
-      try{
-        await sendSignInLinkToEmail(auth,email,settings);
-        localStorage.setItem('emailForSignIn',email);
-        alert('Magic link sent — check your inbox.');
-        status.textContent='Magic link sent — check your email';
-      }catch(err){ console.error(err); alert('Failed: '+err.message); }
+    // --------- Game lifecycle ----------
+    function newGame() {
+      game.reset();
+      renderBoard();
+      statusEl.textContent = (currentUserEmail ? 'Playing AI (level ' + requestedSkill + ')' : 'Not signed in — sign in to play');
+    }
+
+    // --------- Firebase magic link handling ----------
+    sendLinkBtn.addEventListener('click', async () => {
+      const email = (emailInput.value || '').trim().toLowerCase();
+      if (!email) { alert('Enter a valid email'); return; }
+      const actionCodeSettings = {
+        url: window.location.href,
+        handleCodeInApp: true
+      };
+      try {
+        await sendSignInLinkToEmail(auth, email, actionCodeSettings);
+        localStorage.setItem('emailForSignIn', email);
+        alert('Magic link sent — check your email (also check promotions/spam).');
+        statusEl.textContent = 'Magic link sent — check your email.';
+      } catch (err) {
+        console.error('sendSignInLinkToEmail error', err);
+        alert('Failed to send magic link: ' + (err && err.message ? err.message : err));
+      }
     });
 
-    async function tryCompleteSignIn(){
-      try{
-        if(isSignInWithEmailLink(auth,window.location.href)){
-          let email=localStorage.getItem('emailForSignIn');
-          if(!email){ email=prompt('Enter your email'); }
-          if(!email)return;
-          const result=await signInWithEmailLink(auth,email,window.location.href);
+    async function tryCompleteSignIn() {
+      try {
+        if (isSignInWithEmailLink(auth, window.location.href)) {
+          let email = localStorage.getItem('emailForSignIn');
+          if (!email) email = window.prompt('Please provide the email you used to sign in');
+          if (!email) return;
+          const result = await signInWithEmailLink(auth, email, window.location.href);
           localStorage.removeItem('emailForSignIn');
-          status.textContent='Signed in: '+result.user.email;
+          // user signed in; onAuthStateChanged listener will handle the rest
         }
-      }catch(err){ console.error('Sign-in error',err); }
+      } catch (err) {
+        console.error('Error completing sign-in', err);
+        // don't block UI; user can retry
+      }
     }
 
-    let currentUserEmail=null;
-    onAuthStateChanged(auth, async (user)=>{
-      if(user){
-        currentUserEmail=user.email||null;
-        status.textContent='Signed in: '+currentUserEmail+' — Starting AI match';
-        try{ await addDoc(collection(db,'logins'),{email:currentUserEmail,ts:serverTimestamp()}); }catch{}
-        startEngine(3); newGame();
+    // Track auth state
+    let currentUserEmail = null;
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        currentUserEmail = user.email || '(no-email)';
+        statusEl.textContent = 'Signed in: ' + currentUserEmail + ' — Starting AI match';
+        // log to Firestore (non-blocking)
+        try {
+          await addDoc(collection(db, 'logins'), { email: currentUserEmail || 'unknown', ts: serverTimestamp() });
+        } catch (err) { console.error('Firestore log failed', err); }
+        // start engine & new game
+        startEngine(3);
+        newGame();
       } else {
-        currentUserEmail=null;
-        status.textContent='Not signed in';
-        if(engine){ try{engine.terminate();}catch{} engine=null; engineReady=false; }
+        currentUserEmail = null;
+        statusEl.textContent = 'Not signed in — enter your email and click "Send Magic Link"';
+        // stop engine
+        if (engine) { try { engine.terminate(); } catch(e) {} engine = null; engineReady = false; }
         newGame();
       }
     });
 
+    // try to complete magic-link sign-in on load
     tryCompleteSignIn();
+
+    // init page with new game
     newGame();
 
-    document.getElementById('connectBtn').addEventListener('click',()=>alert('Connect Wallet placeholder'));
-    document.getElementById('createBtn').addEventListener('click',()=>alert('Create Game placeholder'));
+    // placeholder hooks for wallet/create
+    document.getElementById('connectBtn').addEventListener('click', () => alert('Wallet connect placeholder — implement BSC wallet connect'));
+    document.getElementById('createBtn').addEventListener('click', () => alert('Create game placeholder — implement on-chain creation'));
   </script>
 </body>
 </html>
