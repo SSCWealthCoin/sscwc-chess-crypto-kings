@@ -38,7 +38,6 @@
       to { filter: brightness(1.4) drop-shadow(0 0 25px #ffd700); }
     }
 
-    /* Headings */
     h1 {
       font-size: 1.6em;
       color: #ffd700;
@@ -52,7 +51,6 @@
       margin-bottom: 30px;
     }
 
-    /* Buttons */
     .btn {
       padding: 12px 18px;
       margin: 8px;
@@ -84,7 +82,6 @@
       text-align: center;
     }
 
-    /* Chessboard Container */
     #chessContainer {
       margin: 50px auto;
       width: 320px;
@@ -109,27 +106,21 @@
       position: relative;
     }
 
-    #board::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      border-radius: 6px;
-      box-shadow: 0 0 40px rgba(255, 215, 0, 0.25);
-      pointer-events: none;
-    }
-
     .square {
       width: 100%;
       height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      user-select: none;
     }
 
-    .square.light {
-      background-color: #f9d98b;
-    }
+    .light { background-color: #f9d98b; }
+    .dark { background-color: #946b32; }
 
-    .square.dark {
-      background-color: #946b32;
-    }
+    .white-piece { color: #fff8dc; text-shadow: 0 0 10px gold; }
+    .black-piece { color: #3b2c0a; text-shadow: 0 0 10px #d4af37; }
 
     footer {
       margin: 40px 0;
@@ -139,16 +130,13 @@
   </style>
 </head>
 <body>
-  <!-- Logo Section -->
   <div class="logo-container">
     <img src="Gifcmr3XoAA_WF-.jpeg" alt="SSC Wealth Coin Logo">
   </div>
 
-  <!-- Titles -->
   <h1>SSCWC Chess Crypto Kings</h1>
   <h2>The Future of Gold on Blockchain</h2>
 
-  <!-- Login & Action Buttons -->
   <input type="email" placeholder="Your email (for quick sign-in)" />
   <div>
     <button class="btn btn-pink">Send Magic Link</button>
@@ -163,7 +151,6 @@
 
   <p>Not signed in — enter email and click "Send Magic Link"</p>
 
-  <!-- Chessboard -->
   <div id="chessContainer">
     <div id="board"></div>
   </div>
@@ -172,17 +159,34 @@
 
   <script>
     function buildBoard() {
-      const boardEl = document.getElementById("board");
-      boardEl.innerHTML = "";
+      const board = document.getElementById("board");
+      const initial = [
+        ["♜","♞","♝","♛","♚","♝","♞","♜"],
+        ["♟","♟","♟","♟","♟","♟","♟","♟"],
+        ["","","","","","","",""],
+        ["","","","","","","",""],
+        ["","","","","","","",""],
+        ["","","","","","","",""],
+        ["♙","♙","♙","♙","♙","♙","♙","♙"],
+        ["♖","♘","♗","♕","♔","♗","♘","♖"]
+      ];
+
       for (let row = 0; row < 8; row++) {
         for (let col = 0; col < 8; col++) {
           const square = document.createElement("div");
           square.className = "square " + ((row + col) % 2 === 0 ? "light" : "dark");
-          boardEl.appendChild(square);
+          const piece = initial[row][col];
+          if (piece) {
+            const pieceEl = document.createElement("span");
+            pieceEl.innerHTML = piece;
+            pieceEl.className = (row < 2) ? "black-piece" : (row > 5 ? "white-piece" : "");
+            square.appendChild(pieceEl);
+          }
+          board.appendChild(square);
         }
       }
-      console.log("Board built with", boardEl.children.length, "squares");
     }
+
     document.addEventListener("DOMContentLoaded", buildBoard);
   </script>
 </body>
