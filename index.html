@@ -70,6 +70,9 @@
       font-weight: bold;
       box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
       transition: transform 0.2s, box-shadow 0.2s;
+      display: inline-block;
+      text-decoration: none;
+      line-height: 1.2;
     }
 
     .btn-gold:hover {
@@ -152,11 +155,14 @@
     <button class="btn btn-green">Create Game</button>
   </div>
   <div>
-    <button 
+    <a 
+      href="https://app.uniswap.org/explore/tokens/bnb/0xd7deadbf768dec8ac13850e4f6787ac53a9d0447?utm_medium=mobile&utm_source=share-tdp"
+      target="_blank"
+      rel="noopener noreferrer"
       class="btn btn-gold"
-      onclick="window.open('https://app.uniswap.org/explore/tokens/bnb/0xd7deadbf768dec8ac13850e4f6787ac53a9d0447?utm_medium=mobile&utm_source=share-tdp', '_blank')">
+      style="display:inline-block; text-decoration:none; line-height:40px;">
       🪙 Buy SSCWC on Uniswap
-    </button>
+    </a>
   </div>
 
   <p>Not signed in — enter email and click "Send Magic Link"</p>
