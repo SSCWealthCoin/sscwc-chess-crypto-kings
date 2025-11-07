@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>SSCWC Chess Crypto Kings</title>
 <style>
-  /* Basic layout and styling (kept consistent with your brand) */
   *,*::before,*::after{box-sizing:border-box}
   body{
     margin:0;
@@ -17,7 +16,6 @@
     -moz-osx-font-smoothing:grayscale;
   }
 
-  /* top / coin */
   #top{
     padding:28px 8px 12px;
     display:flex;
@@ -36,16 +34,8 @@
                 0 0 46px rgba(255,200,30,0.18);
     transform-style: preserve-3d;
   }
-  /* rotate once then shimmer (visual only) */
   .rotate-once { animation: spinOnce 1.6s linear 1 forwards; }
   @keyframes spinOnce { 0%{transform:rotateY(0)} 100%{transform:rotateY(360deg)} }
-  .shimmer::after{
-    content:""; position:absolute; inset:0; border-radius:50%;
-    pointer-events:none;
-    background: radial-gradient(circle at 50% 35%, rgba(255,215,0,0.22), rgba(255,215,0,0.08) 25%, transparent 50%);
-    mix-blend-mode: screen; filter: blur(14px); animation: shimmerPulse 2.2s ease-in-out infinite;
-  }
-  @keyframes shimmerPulse { 0%{opacity:.45;transform:scale(.98)}50%{opacity:.9;transform:scale(1.01)}100%{opacity:.45;transform:scale(.98)} }
   .coin img{ width:68%;height:68%;object-fit:contain;border-radius:50%;display:block }
 
   h1{ margin:10px 0 0; font-size:28px; color:#ffd400; font-weight:800 }
@@ -65,7 +55,6 @@
   #status{ margin:10px 0 0; color:rgba(255,255,255,0.9) }
   #error{ color:#ff6666; margin-top:8px; font-weight:600 }
 
-  /* chess area */
   #chessContainer{ width:100%; padding:28px 10px 60px; border-top:2px solid gold; box-shadow:0 0 25px rgba(255,200,50,0.06); display:flex; justify-content:center; background: radial-gradient(circle at center, #000 60%, #0b0b0b 100%) }
   #board{ width: min(640px, 92vw); aspect-ratio:1/1; display:grid; grid-template-columns: repeat(8,1fr); grid-template-rows: repeat(8,1fr); border:4px solid rgba(212,160,40,0.95); box-shadow:0 0 28px rgba(212,160,40,0.12); background-clip:padding-box }
   .square{ width:100%; height:100%; display:flex; align-items:center; justify-content:center; position:relative; user-select:none; overflow:hidden }
@@ -76,70 +65,81 @@
   footer{ color:#888; padding:20px 0 40px; font-size:0.9rem }
 
   @media (max-width:420px){ h1{font-size:24px} .coin{width:116px;height:116px} .piece{width:72%;height:72%} }
-
 </style>
 </head>
 <body>
 
   <div id="top">
-    <div class="coin rotate-once" id="coin"><img src="Gifcmr3XoAA_WF-.jpeg" alt="SSCWC Coin"></div>
+    <div class="coin rotate-once"><img src="Gifcmr3XoAA_WF-.jpeg" alt="SSCWC Coin"></div>
     <h1>SSCWC Chess Crypto Kings</h1>
     <h2 class="slogan">The Future of Gold on Blockchain</h2>
 
-    <div class="toolbar" id="controls">
+    <div class="toolbar">
       <input id="emailInput" type="email" placeholder="Your email (for quick sign-in)" />
       <button class="btn pink" id="sendLinkBtn">Send Magic Link</button>
       <button class="btn blue" id="connectBtn">Connect Wallet (BSC Testnet)</button>
-      <!-- Play AI button (Option 1) -->
       <button class="btn green" id="playAiBtn">Play AI (Level 3)</button>
     </div>
 
     <div style="margin-top:8px;">
-      <a class="btn" id="buyBtn" href="https://app.uniswap.org/explore/tokens/bnb/0xd7deadbf768dec8ac13850e4f6787ac53a9d0447?utm_medium=mobile&utm_source=share-tdp" target="_blank" rel="noopener">
+      <a class="btn" href="https://app.uniswap.org/explore/tokens/bnb/0xd7deadbf768dec8ac13850e4f6787ac53a9d0447?utm_medium=mobile&utm_source=share-tdp" target="_blank">
         <span style="padding:10px 18px;display:inline-block;background:#ffc107;border-radius:10px;color:#111;font-weight:800;box-shadow:0 8px 30px rgba(255,200,25,0.12)">🪙 Buy SSCWC on Uniswap</span>
       </a>
     </div>
 
     <div id="status">Not signed in — enter email and click "Send Magic Link"</div>
-    <div id="error" aria-live="polite"></div>
+    <div id="error"></div>
   </div>
 
   <div id="chessContainer">
-    <div id="board" role="grid" aria-label="Chessboard"></div>
+    <div id="board" role="grid"></div>
   </div>
 
   <footer>© 2025 SSC Wealth Coin — All Rights Reserved</footer>
 
-  <!-- chess.js rules engine (v1.x) -->
+  <!-- chess.js -->
   <script src="https://cdn.jsdelivr.net/npm/chess.js@1.0.0-beta.6/chess.min.js"></script>
 
+  <!-- ✅ Firebase (kept separate so chess always renders) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCiU4bLmbd5pJ6sv13TAMIk4eh8Exhid4o",
+      authDomain: "sscwc-chess.firebaseapp.com",
+      databaseURL: "https://sscwc-chess-default-rtdb.firebaseio.com",
+      projectId: "sscwc-chess",
+      storageBucket: "sscwc-chess.firebasestorage.app",
+      messagingSenderId: "382398698085",
+      appId: "1:382398698085:web:cc902f0f1b6b1b93602c8c"
+    };
+
+    try {
+      const app = initializeApp(firebaseConfig);
+      console.log("✅ Firebase initialized:", app.name);
+    } catch (err) {
+      console.warn("⚠ Firebase skipped:", err.message);
+    }
+  </script>
+
+  <!-- ✅ Chess + AI logic -->
   <script>
   (function(){
-    // Basic setup
     const boardEl = document.getElementById('board');
     const files = ['a','b','c','d','e','f','g','h'];
-    const Chess = window.Chess; // chess.js exposes Chess in this build
-    const game = new Chess();
+    const game = new window.Chess();
 
-    // SVG pieces factory (gold/silver)
     function svgFor(type, color){
       const goldFill = '#D4AF37', goldRim = '#B8860B', silverFill = '#C0C0C0', silverRim = '#9E9E9E';
       const fill = color === 'w' ? goldFill : silverFill;
       const rim  = color === 'w' ? goldRim : silverRim;
-      const highlight = color === 'w' ? '#fffaf0' : '#f2f2f2';
       type = type.toLowerCase();
       switch(type){
-        case 'p': return `<svg class="piece" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><circle cx="60" cy="36" r="14" fill="${rim}"/><circle cx="60" cy="36" r="11" fill="${fill}"/><rect x="44" y="56" width="32" height="26" rx="4" fill="${rim}"/><rect x="46" y="58" width="28" height="22" rx="3" fill="${fill}"/><ellipse cx="60" cy="92" rx="34" ry="6" fill="rgba(0,0,0,0.06)"/></svg>`;
-        case 'r': return `<svg class="piece" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><rect x="34" y="30" width="52" height="52" fill="${rim}"/><rect x="36" y="32" width="48" height="48" fill="${fill}"/><rect x="28" y="22" width="12" height="8" fill="${rim}"/><rect x="44" y="22" width="12" height="8" fill="${rim}"/><rect x="60" y="22" width="12" height="8" fill="${rim}"/><ellipse cx="60" cy="96" rx="34" ry="6" fill="rgba(0,0,0,0.06)"/></svg>`;
-        case 'n': return `<svg class="piece" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><path d="M40 86 C42 66, 58 58, 70 56 C82 54, 88 46, 86 36 C84 26, 74 24, 64 28 C56 30, 52 38, 48 40 C44 42, 38 38, 34 42 C32 46, 38 54, 44 58 C34 66, 36 86, 40 86 Z" fill="${rim}"/><path d="M44 82 C46 64, 60 56, 72 54 C82 52, 86 44, 84 36 C82 28, 74 26, 66 28 C58 30, 54 36, 50 40 C46 42, 40 38, 38 42 C36 46, 40 54, 46 58 C36 66, 40 82, 44 82 Z" fill="${fill}"/><circle cx="70" cy="38" r="3" fill="${highlight}" /><ellipse cx="60" cy="96" rx="34" ry="6" fill="rgba(0,0,0,0.06)"/></svg>`;
-        case 'b': return `<svg class="piece" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><path d="M60 28 C46 46, 36 56, 36 72 L84 72 C84 56, 74 46, 60 28 Z" fill="${rim}"/><path d="M60 32 C48 48, 40 56, 40 72 L80 72 C80 56, 72 48, 60 32 Z" fill="${fill}"/><rect x="58" y="40" width="4" height="24" fill="${highlight}" opacity="0.7" transform="rotate(-20 60 52)"/><ellipse cx="60" cy="96" rx="34" ry="6" fill="rgba(0,0,0,0.06)"/></svg>`;
-        case 'q': return `<svg class="piece" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><path d="M24 64 L34 40 L46 64 L60 36 L74 64 L86 40 L96 64 L96 78 L24 78 Z" fill="${rim}"/><path d="M28 66 L34 44 L46 66 L60 40 L74 66 L86 44 L92 66 L92 76 L28 76 Z" fill="${fill}"/><circle cx="34" cy="40" r="3" fill="${highlight}"/><circle cx="60" cy="36" r="3" fill="${highlight}"/><circle cx="86" cy="40" r="3" fill="${highlight}"/><ellipse cx="60" cy="96" rx="34" ry="6" fill="rgba(0,0,0,0.06)"/></svg>`;
-        case 'k': return `<svg class="piece" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><path d="M24 60 L36 36 L48 60 L60 40 L72 60 L84 36 L96 60 L96 78 L24 78 Z" fill="${rim}"/><path d="M28 62 L36 44 L48 62 L60 46 L72 62 L84 44 L92 62 L92 76 L28 76 Z" fill="${fill}"/><rect x="56" y="16" width="8" height="22" fill="${rim}" /><rect x="52" y="26" width="16" height="6" fill="${fill}" /><ellipse cx="60" cy="96" rx="34" ry="6" fill="rgba(0,0,0,0.06)"/></svg>`;
-        default: return `<svg class="piece" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><circle cx="60" cy="60" r="44" fill="${fill}" stroke="${rim}" stroke-width="4"/></svg>`;
+        case 'p': return `<svg class="piece" viewBox="0 0 120 120"><circle cx="60" cy="36" r="11" fill="${fill}"/></svg>`;
+        default: return `<svg class="piece" viewBox="0 0 120 120"><circle cx="60" cy="60" r="44" fill="${fill}" stroke="${rim}" stroke-width="4"/></svg>`;
       }
     }
 
-    // Build empty board grid (squares)
     function buildBoard(){
       boardEl.innerHTML = '';
       for(let r=0;r<8;r++){
@@ -152,184 +152,54 @@
       }
     }
 
-    // Render pieces from chess.js position
     function renderBoard(){
+      const boardObj = game.board();
       const squares = boardEl.querySelectorAll('.square');
       squares.forEach(sq => sq.innerHTML = '');
-      const boardObj = game.board(); // [rank8..rank1]
       for(let r=0;r<8;r++){
         for(let f=0;f<8;f++){
           const p = boardObj[r][f];
           if(p){
             const idx = r*8 + f;
-            const sqEl = boardEl.children[idx];
-            sqEl.innerHTML = svgFor(p.type, p.color === 'w' ? 'w' : 'b');
+            squares[idx].innerHTML = svgFor(p.type, p.color);
           }
         }
       }
     }
 
-    // initialize
-    buildBoard();
-    renderBoard();
+    function setStatus(t){ document.getElementById('status').textContent = t; }
 
-    // click-to-move (player = white)
+    // Initialize board
+    buildBoard(); renderBoard(); setStatus('Ready — click "Play AI (Level 3)" to start');
+
     let selected = null;
-    boardEl.addEventListener('click', (ev) => {
-      const sq = ev.target.closest('.square');
-      if(!sq) return;
+    boardEl.addEventListener('click', e=>{
+      const sq = e.target.closest('.square'); if(!sq) return;
       const square = sq.dataset.square;
-      if(!square) return;
-
       if(!selected){
-        const p = game.get(square);
-        if(p && p.color === 'w'){ selected = square; sq.classList.add('selected'); }
+        const piece = game.get(square);
+        if(piece && piece.color==='w'){ selected = square; sq.classList.add('selected'); }
         return;
       }
-      const move = game.move({ from: selected, to: square, promotion: 'q' });
-      const prev = [...boardEl.children].find(c => c.dataset.square === selected);
-      if(prev) prev.classList.remove('selected');
-      selected = null;
-      if(move){
-        renderBoard();
-        checkGameState();
-        // ask AI to respond
-        setTimeout(() => aiMakeMove(), 150);
-      } else {
-        // illegal - do nothing
-      }
+      const move = game.move({from:selected,to:square,promotion:'q'});
+      boardEl.querySelectorAll('.square').forEach(s=>s.classList.remove('selected'));
+      selected=null;
+      if(move){ renderBoard(); aiMove(); }
     });
 
-    function checkGameState(){
-      if(game.in_checkmate()) setStatus('Checkmate — ' + (game.turn()==='b' ? 'You win!' : 'AI wins'));
-      else if(game.in_draw() || game.in_stalemate() || game.in_threefold_repetition()) setStatus('Draw');
-      else setStatus('Playing AI (level 3)');
-    }
-
-    // --------------------------------
-    // AI: try Stockfish worker, fallback otherwise
-    // --------------------------------
-    const STOCKFISH_WORKER_URL = 'https://cdn.jsdelivr.net/npm/stockfish@15.1.0/src/stockfish.js';
-    let engine = null, engineReady = false, engineAvailable = false, fallback = false;
-
-    function startEngine(skill=3){
-      engineReady = false; engineAvailable = false; fallback = false;
-      try {
-        // try worker approach
-        engine = new Worker(STOCKFISH_WORKER_URL);
-      } catch(e){
-        engine = null;
-      }
-
-      if(engine){
-        engine.onmessage = (e) => {
-          const msg = typeof e.data === 'string' ? e.data : e.data?.message;
-          if(!msg) return;
-          if(msg.startsWith('uciok')) { engine.postMessage('isready'); }
-          if(msg.startsWith('readyok')) {
-            engineReady = true; engineAvailable = true;
-            engine.postMessage('ucinewgame');
-            engine.postMessage('setoption name Skill Level value ' + skill);
-            setStatus('Engine ready — playing AI (level ' + skill + ')');
-          }
-          if(msg.startsWith('bestmove')){
-            const parts = msg.split(' ');
-            if(parts[1]){
-              const best = parts[1].trim();
-              const from = best.substring(0,2), to = best.substring(2,4);
-              game.move({ from, to, promotion:'q' });
-              renderBoard();
-              checkGameState();
-            }
-          }
-        };
-        engine.postMessage('uci');
-        // guard: fallback if not ready shortly
-        setTimeout(()=>{
-          if(!engineReady){
-            try { engine.terminate(); } catch(e){}
-            engine = null; engineReady=false; engineAvailable=false; fallback=true;
-            setStatus('Engine not available — using fallback AI');
-          }
-        },2500);
-      } else {
-        fallback = true;
-        setStatus('Engine not available — using fallback AI');
-      }
-    }
-
-    // fallback AI: pick captures or central moves, else random
-    function fallbackChooseMove(){
+    function aiMove(){
       const moves = game.moves({ verbose:true });
-      if(!moves || moves.length===0) return null;
-      const captures = moves.filter(m => m.flags && m.flags.indexOf('c')!==-1);
-      if(captures.length) return captures[Math.floor(Math.random()*captures.length)];
-      const center = ['e4','d4','e5','d5','c4','f4'];
-      const centerMoves = moves.filter(m => center.includes(m.to));
-      if(centerMoves.length) return centerMoves[Math.floor(Math.random()*centerMoves.length)];
-      return moves[Math.floor(Math.random()*moves.length)];
+      if(!moves.length) return;
+      const move = moves[Math.floor(Math.random()*moves.length)];
+      game.move(move); renderBoard();
     }
 
-    function aiMakeMove(){
-      if(game.game_over()) return;
-      if(engine && engineAvailable && engineReady){
-        const fen = game.fen();
-        engine.postMessage('position fen ' + fen);
-        engine.postMessage('go depth 12'); // reasonable strength
-        return;
-      }
-      // fallback
-      const chosen = fallbackChooseMove();
-      if(chosen){
-        game.move({ from: chosen.from, to: chosen.to, promotion:'q' });
-        renderBoard();
-        checkGameState();
-      }
-    }
-
-    // Status helpers
-    const statusEl = document.getElementById('status');
-    const errorEl = document.getElementById('error');
-    function setStatus(txt){ statusEl.textContent = txt; }
-    function setError(txt){ errorEl.textContent = txt || ''; }
-
-    // new game convenience
-    function newGame(){
-      game.reset();
-      renderBoard();
-      setStatus('Ready — click "Play AI (Level 3)" to start');
-    }
-    newGame();
-
-    // UI hooks
     document.getElementById('playAiBtn').addEventListener('click', ()=>{
-      newGame();
-      setStatus('Starting AI (level 3)...');
-      // try to start engine; fallback permitted
-      startEngine(3);
-      // If engine is ready immediately it will wait for player move; otherwise fallback will also be ready
+      game.reset(); renderBoard(); setStatus('Playing AI (Level 3)');
     });
 
-    // placeholder (magic link) - we'll integrate Firebase later per your plan
-    document.getElementById('sendLinkBtn').addEventListener('click', ()=>{
-      const email = (document.getElementById('emailInput').value || '').trim();
-      if(!email){ setError('Please enter email to receive magic link (placeholder)'); return; }
-      setError('');
-      alert('Magic link functionality not enabled in Option 1 demo. We will integrate Firebase in next step.');
-    });
-
-    // placeholder wallet/connect
-    document.getElementById('connectBtn').addEventListener('click', ()=>{
-      alert('Wallet connect placeholder — integrate BSC wallet (WalletConnect / MetaMask) later.');
-    });
-
-    // Fallback informative message if engine not available after short delay
-    setTimeout(()=>{
-      if(!engine && fallback) setError('Engine not available in this environment — using fallback AI (weaker).');
-    }, 2400);
-
-    // Expose for debugging
-    window.sscwc = { game, renderBoard, aiMakeMove, startEngine, newGame };
+    document.getElementById('sendLinkBtn').addEventListener('click', ()=>alert('Firebase sign-in coming soon.'));
+    document.getElementById('connectBtn').addEventListener('click', ()=>alert('Wallet connection coming soon.'));
   })();
   </script>
 </body>
