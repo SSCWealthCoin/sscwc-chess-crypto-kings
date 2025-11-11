@@ -1,111 +1,214 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>SSCWC Chess Crypto Kings</title>
-<style>
-  *,*::before,*::after{box-sizing:border-box}
-  body{margin:0;background:#000;color:#fff;font-family:"Poppins",Arial,sans-serif;text-align:center}
-  #top{padding:28px 8px 12px;display:flex;flex-direction:column;align-items:center;gap:8px}
-  .coin{width:136px;height:136px;border-radius:50%;display:flex;align-items:center;justify-content:center;
-        background:radial-gradient(circle at 30% 30%,#ffd84d 0%,#c18c08 85%);
-        box-shadow:inset 3px 3px 12px rgba(255,255,255,0.20),
-                   inset -6px -6px 18px rgba(0,0,0,0.45),
-                   0 0 46px rgba(255,200,30,0.18)}
-  .coin img{width:68%;height:68%;object-fit:contain;border-radius:50%}
-  h1{margin:10px 0 0;font-size:28px;color:#ffd400;font-weight:800}
-  h2.slogan{margin:4px 0 12px;font-style:italic;color:#ffd777;font-weight:500}
-  .toolbar{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
-  input#emailInput{padding:10px 14px;border-radius:10px;border:1px solid #333;background:#0b0b0b;color:#fff;min-width:220px}
-  .btn{padding:10px 16px;border-radius:10px;border:none;font-weight:700;cursor:pointer}
-  .pink{background:#ff4fd8;color:#fff}.blue{background:#0099ff;color:#fff}.green{background:#29a745;color:#fff}
-  #status{margin:10px 0 0;color:#ccc}
-  #chessContainer{width:100%;padding:28px 10px;border-top:2px solid gold;display:flex;justify-content:center;background:#000}
-  #board{width:min(640px,92vw);aspect-ratio:1/1;display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);
-         border:4px solid #d4af37;box-shadow:0 0 20px rgba(212,160,40,0.3)}
-  .square{display:flex;align-items:center;justify-content:center}
-  .light{background:#f0d9b5}.dark{background:#b58863}
-  .piece{width:80%;height:80%}
-</style>
-</head>
-<body>
-<div id="top">
-  <div class="coin"><img src="Gifcmr3XoAA_WF-.jpeg" alt="SSCWC Coin"></div>
-  <h1>SSCWC Chess Crypto Kings</h1>
-  <h2 class="slogan">The Future of Gold on Blockchain</h2>
-  <div class="toolbar">
-    <input id="emailInput" type="email" placeholder="Your email (for quick sign-in)" />
-    <button class="btn pink">Send Magic Link</button>
-    <button class="btn blue">Connect Wallet</button>
-    <button class="btn green" id="playAiBtn">Play AI</button>
-  </div>
-  <a class="btn" href="https://app.uniswap.org/explore/tokens/bnb/0xd7deadbf768dec8ac13850e4f6787ac53a9d0447" target="_blank"
-     style="margin-top:10px;background:#ffc107;color:#111;font-weight:800;">🪙 Buy SSCWC on Uniswap</a>
-  <div id="status">Ready — click “Play AI” to start</div>
-</div>
-
-<div id="chessContainer"><div id="board"></div></div>
-
-<!-- ✅ Stable Chess.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.13.4/chess.min.js"></script>
-
-<script>
-const boardEl=document.getElementById('board');
-const files=['a','b','c','d','e','f','g','h'];
-const game=new Chess();
-
-function buildBoard(){
-  boardEl.innerHTML='';
-  for(let r=0;r<8;r++){
-    for(let f=0;f<8;f++){
-      const sq=document.createElement('div');
-      sq.className='square '+((r+f)%2===0?'light':'dark');
-      sq.dataset.square=files[f]+(8-r);
-      boardEl.appendChild(sq);
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SSCWC Chess Crypto Kings</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Poppins", sans-serif;
+      background: #000;
+      color: #fff;
+      text-align: center;
     }
-  }
-}
-function renderBoard(){
-  const brd=game.board();
-  const squares=boardEl.querySelectorAll('.square');
-  squares.forEach(s=>s.innerHTML='');
-  for(let r=0;r<8;r++){
-    for(let f=0;f<8;f++){
-      const p=brd[r][f];
-      if(p){
-        const el=squares[r*8+f];
-        const img=document.createElement('img');
-        img.src=`https://chessboardjs.com/img/chesspieces/wikipedia/${p.color}${p.type.toUpperCase()}.png`;
-        img.className='piece';
-        el.appendChild(img);
+
+    /* Logo Section */
+    .logo-container {
+      margin-top: 40px;
+      animation: rotateOnce 4s ease-in-out 1, shimmer 3s 4s infinite alternate;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .logo-container img {
+      width: 160px;
+      border-radius: 50%;
+      box-shadow: 0 0 60px rgba(255, 215, 0, 0.6);
+    }
+
+    @keyframes rotateOnce {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @keyframes shimmer {
+      from { filter: brightness(1) drop-shadow(0 0 15px gold); }
+      to { filter: brightness(1.4) drop-shadow(0 0 25px #ffd700); }
+    }
+
+    h1 {
+      font-size: 1.6em;
+      color: #ffd700;
+      margin-top: 20px;
+    }
+
+    h2 {
+      font-size: 1.2em;
+      font-style: italic;
+      color: #ffe066;
+      margin-bottom: 30px;
+    }
+
+    .btn {
+      padding: 12px 18px;
+      margin: 8px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 1em;
+      font-weight: 600;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+    }
+
+    .btn-pink { background: #ff42e3; color: white; }
+    .btn-blue { background: #007bff; color: white; }
+    .btn-green { background: #00b853; color: white; }
+    .btn-gold {
+      background: linear-gradient(180deg, #ffea70 0%, #ffcc00 100%);
+      color: #000;
+      font-weight: bold;
+      box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+    }
+
+    input {
+      padding: 12px;
+      width: 280px;
+      border-radius: 8px;
+      border: 1px solid #333;
+      margin: 8px 0;
+      background: #111;
+      color: #fff;
+      text-align: center;
+    }
+
+    #chessContainer {
+      margin: 50px auto;
+      width: 320px;
+      height: 320px;
+      background: radial-gradient(circle at center, #111 60%, #000 100%);
+      border: 2px solid #ffd700;
+      border-radius: 10px;
+      box-shadow: 0 0 40px rgba(255, 215, 0, 0.25);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #board {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      grid-template-rows: repeat(8, 1fr);
+      width: 300px;
+      height: 300px;
+      border: 5px solid #ffd700;
+      box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+      position: relative;
+    }
+
+    .square {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      user-select: none;
+    }
+
+    .light { background-color: #f9d98b; }
+    .dark { background-color: #946b32; }
+
+    .white-piece { color: #fff8dc; text-shadow: 0 0 10px gold; }
+    .black-piece { color: #3b2c0a; text-shadow: 0 0 10px #d4af37; }
+
+    footer {
+      margin: 40px 0;
+      color: #777;
+      font-size: 0.9em;
+    }
+
+    /* Responsive for mobile */
+    @media (max-width: 480px) {
+      #chessContainer {
+        width: 260px;
+        height: 260px;
+      }
+      #board {
+        width: 240px;
+        height: 240px;
       }
     }
-  }
-}
-function aiMove(){
-  const moves=game.moves();
-  if(moves.length===0)return;
-  const move=moves[Math.floor(Math.random()*moves.length)];
-  game.move(move); renderBoard();
-}
-boardEl.addEventListener('click',e=>{
-  const sq=e.target.closest('.square');if(!sq)return;
-  const sel=document.querySelector('.selected');
-  if(sel)sel.classList.remove('selected');
-  const piece=game.get(sq.dataset.square);
-  if(piece&&piece.color==='w'){
-    sq.classList.add('selected');
-    boardEl.dataset.from=sq.dataset.square;
-  }else if(boardEl.dataset.from){
-    const move=game.move({from:boardEl.dataset.from,to:sq.dataset.square,promotion:'q'});
-    boardEl.dataset.from='';
-    renderBoard();
-    if(move)aiMove();
-  }
-});
-buildBoard();renderBoard();
-document.getElementById('playAiBtn').addEventListener('click',()=>{game.reset();renderBoard();});
-</script>
+  </style>
+</head>
+<body>
+  <div class="logo-container">
+    <img src="https://raw.githubusercontent.com/SSCWealthCoin/sscwealthcoin.github.io/main/Gifcmr3XoAA_WF-.jpeg" alt="SSC Wealth Coin Logo">
+  </div>
+
+  <h1>SSCWC Chess Crypto Kings</h1>
+  <h2>The Future of Gold on Blockchain</h2>
+
+  <input type="email" placeholder="Your email (for quick sign-in)" />
+  <div>
+    <button class="btn btn-pink">Send Magic Link</button>
+  </div>
+  <div>
+    <button class="btn btn-blue">Connect Wallet (BSC Testnet)</button>
+    <button class="btn btn-green">Create Game</button>
+  </div>
+  <div>
+    <button class="btn btn-gold" onclick="window.open('https://app.uniswap.org/explore/tokens/bnb/0xd7deadbf768dec8ac13850e4f6787ac53a9d0447?utm_medium=mobile&utm_source=share-tdp', '_blank')">🪙 Buy SSCWC on Uniswap</button>
+  </div>
+
+  <p>Not signed in — enter email and click "Send Magic Link"</p>
+
+  <div id="chessContainer">
+    <div id="board"></div>
+  </div>
+
+  <footer>© 2025 SSC Wealth Coin — All Rights Reserved</footer>
+
+  <script>
+    function buildBoard() {
+      const board = document.getElementById("board");
+      if (!board) return; // safety check
+
+      const initial = [
+        ["♜","♞","♝","♛","♚","♝","♞","♜"],
+        ["♟","♟","♟","♟","♟","♟","♟","♟"],
+        ["","","","","","","",""],
+        ["","","","","","","",""],
+        ["","","","","","","",""],
+        ["","","","","","","",""],
+        ["♙","♙","♙","♙","♙","♙","♙","♙"],
+        ["♖","♘","♗","♕","♔","♗","♘","♖"]
+      ];
+
+      for (let row = 0; row < 8; row++) {
+        for (let col = 0; col < 8; col++) {
+          const square = document.createElement("div");
+          square.className = "square " + ((row + col) % 2 === 0 ? "light" : "dark");
+          const piece = initial[row][col];
+          if (piece) {
+            const pieceEl = document.createElement("span");
+            pieceEl.innerHTML = piece;
+            pieceEl.className = (row < 2) ? "black-piece" : (row > 5 ? "white-piece" : "");
+            square.appendChild(pieceEl);
+          }
+          board.appendChild(square);
+        }
+      }
+    }
+
+    // Ensures board builds after everything loads
+    window.onload = buildBoard;
+  </script>
 </body>
 </html>
